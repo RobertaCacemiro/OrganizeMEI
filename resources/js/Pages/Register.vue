@@ -1,126 +1,129 @@
 <script setup>
-    //js do form
+import { ref, reactive } from "vue"; // Reatividade
+import { router } from "@inertiajs/vue3";
+
+// Icones
+import { User } from "lucide-vue-next";
+import { Mail } from "lucide-vue-next";
+import { Smartphone } from "lucide-vue-next";
+import { KeyRound } from "lucide-vue-next";
+
+// Mask
+import { IMaskComponent } from "vue-imask";
+
+const confirmarSenha = ref("");
+const erroSenha = ref("");
+
+const form = reactive({
+    name: null,
+    phone: null,
+    email: null,
+    password: null,
+});
+
+/**
+ * Função que valida se as senhas informadas coincidem
+ */
+const validarSenha = () => {
+    erroSenha.value = "";
+
+    const senhaValida = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(
+        form.password
+    );
+
+    // console.log(senhaValida);
+    if (!senhaValida) {
+        erroSenha.value =
+            "A senha deve ter mais de 8 caracteres, incluindo número, letra minúscula e letra maiúscula";
+        return false;
+    }
+
+    if (form.password !== confirmarSenha._value) {
+        erroSenha.value = "As senhas não coincidem.";
+        return false;
+    }
+
+    return true;
+};
+
+/**
+ * Função que realiza o chamdado da função de cadastro do usuário na base de dados
+ */
+function register() {
+    const iesSenhaValida = true;
+
+    if (iesSenhaValida) {
+        console.log("FORM", form);
+        router.post("/register", form);
+    }
+}
 </script>
 
 <template>
     <div
-        className="flex min-h-screen w-full flex-col items-center justify-center bg-[#50d71e] p-4"
+        class="bg-[#3DA700] justify-center flex-col flex items-center p-4 min-h-screen w-full"
     >
-        <!-- Logo do projeto -->
-        <div></div>
-        <!-- card -->
+        <!-- Logo -->
+        <div class="w-full max-w-xs mx-auto">
+            <img
+                class="w-full h-auto"
+                src="/resources/img/logo.png"
+                alt="Logo"
+            />
+        </div>
+        <!-- Card com o login -->
         <div class="bg-white rounded-2xl shadow-xl p-12 space-y-4">
             <div class="text-center space-y-2">
-                <h1 class="text-3xl font-bold tracking-tighter">Cadastre-se</h1>
+                <h1 class="text-3xl font-bold tracking-tighter text-[#3DA700]">
+                    Cadastre-se
+                </h1>
                 <p class="text-gray-500">
-                    Cadastre suas credenciais para entrar
+                    Já possui uma conta?
+                    <a
+                        class="text-sm underline text-[#3DA700] hover:text-[#388E3C]"
+                        href="/login"
+                    >
+                        Entrar</a
+                    >
                 </p>
             </div>
 
-            <form class="space-y-3">
-                <div class="space-y-1">
-                    <span class="text-gray-500 text-sm">Usuário</span>
-                    <label class="input validator">
-                        <svg
-                            class="h-[1em] opacity-50"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                        >
-                            <g
-                                stroke-linejoin="round"
-                                stroke-linecap="round"
-                                stroke-width="2.5"
-                                fill="none"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
-                                ></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </g>
-                        </svg>
+            <form
+                id="formularioRegister"
+                class="space-y-4"
+                @submit.prevent="register"
+            >
+                <div class="space-y-2">
+                    <span class="text-gray-500 text-sm">name</span>
+                    <label
+                        class="input validator w-full flex items-center gap-2"
+                    >
+                        <User class="h-[1em] opacity-50" />
                         <input
-                            class="rounded-md"
-                            type="input"
-                            required
+                            v-model="form.name"
+                            type="text"
+                            class="rounded-md w-full"
                             name="user"
-                            placeholder="Digite o nome do usuário"
-                            pattern="[A-Za-z][A-Za-z0-9\-]*"
-                            minlength="3"
-                            maxlength="30"
-                            title="Only letters, numbers or dash"
+                            placeholder="name Completo"
+                            pattern="[A-Za-zÀ-ÿ\s]{3,50}"
+                            title="Apenas letras e espaços, entre 3 e 50 caracteres"
+                            required
                         />
                     </label>
                     <!-- <p class="validator-hint">
-                        Deve ter de 3 a 30 caracteres
-                        <br />
+                        Deve ter de 3 a 50 caracteres
                         contendo apenas letras,números ou hífens
                     </p> -->
                 </div>
 
                 <div class="space-y-1">
-                    <span class="text-gray-500 text-sm">Telefone</span>
-                    <label class="input validator">
-                        <svg
-                            class="h-[1em] opacity-50"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 16 16"
-                        >
-                            <g fill="none">
-                                <path
-                                    d="M7.25 11.5C6.83579 11.5 6.5 11.8358 6.5 12.25C6.5 12.6642 6.83579 13 7.25 13H8.75C9.16421 13 9.5 12.6642 9.5 12.25C9.5 11.8358 9.16421 11.5 8.75 11.5H7.25Z"
-                                    fill="currentColor"
-                                ></path>
-                                <path
-                                    fill-rule="evenodd"
-                                    clip-rule="evenodd"
-                                    d="M6 1C4.61929 1 3.5 2.11929 3.5 3.5V12.5C3.5 13.8807 4.61929 15 6 15H10C11.3807 15 12.5 13.8807 12.5 12.5V3.5C12.5 2.11929 11.3807 1 10 1H6ZM10 2.5H9.5V3C9.5 3.27614 9.27614 3.5 9 3.5H7C6.72386 3.5 6.5 3.27614 6.5 3V2.5H6C5.44771 2.5 5 2.94772 5 3.5V12.5C5 13.0523 5.44772 13.5 6 13.5H10C10.5523 13.5 11 13.0523 11 12.5V3.5C11 2.94772 10.5523 2.5 10 2.5Z"
-                                    fill="currentColor"
-                                ></path>
-                            </g>
-                        </svg>
+                    <span class="text-gray-500 text-sm">E-mail</span>
+                    <label
+                        class="input validator w-full flex items-center gap-2"
+                    >
+                        <Mail class="h-[1em] opacity-50" />
                         <input
-                            type="tel"
-                            class="tabular-nums"
-                            required
-                            placeholder="Telefone"
-                            pattern="[0-9]*"
-                            minlength="10"
-                            maxlength="10"
-                            title="Must be 10 digits"
-                        />
-                    </label>
-                    <!-- <p class="validator-hint">Deve ter 10 dígitos</p> -->
-                </div>
-
-                <div class="space-y-1">
-                    <span class="text-gray-500 text-sm">Email</span>
-                    <label class="input validator">
-                        <svg
-                            class="h-[1em] opacity-50"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                        >
-                            <g
-                                stroke-linejoin="round"
-                                stroke-linecap="round"
-                                stroke-width="2.5"
-                                fill="none"
-                                stroke="currentColor"
-                            >
-                                <rect
-                                    width="20"
-                                    height="16"
-                                    x="2"
-                                    y="4"
-                                    rx="2"
-                                ></rect>
-                                <path
-                                    d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"
-                                ></path>
-                            </g>
-                        </svg>
-                        <input
+                            v-model="form.email"
                             type="email"
                             placeholder="email@exemplo.com.br"
                             required
@@ -132,55 +135,85 @@
                 </div>
 
                 <div class="space-y-1">
-                    <span class="text-gray-500 text-sm">Senha</span>
-                    <label class="input validator">
-                        <svg
-                            class="h-[1em] opacity-50"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                        >
-                            <g
-                                stroke-linejoin="round"
-                                stroke-linecap="round"
-                                stroke-width="2.5"
-                                fill="none"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
-                                ></path>
-                                <circle
-                                    cx="16.5"
-                                    cy="7.5"
-                                    r=".5"
-                                    fill="currentColor"
-                                ></circle>
-                            </g>
-                        </svg>
-                        <input
-                            type="password"
+                    <span class="text-gray-500 text-sm">phone</span>
+                    <label
+                        class="input validator w-full flex items-center gap-2"
+                    >
+                        <Smartphone class="h-[1em] opacity-50" />
+                        <IMaskComponent
+                            v-model="form.phone"
+                            :mask="[
+                                { mask: '(00) 0000-0000' }, // phone fixo
+                                { mask: '(00) 00000-0000' }, // phone cotando com o digito 9 na frente celular
+                            ]"
+                            type="text"
+                            class="tabular-nums"
+                            placeholder="(77) 97777-7777"
+                            title="Digite um número de phone válido com DDD"
                             required
-                            placeholder="Password"
-                            minlength="8"
-                            pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-                            title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
                         />
                     </label>
-                    <!-- <p class="validator-hint hidden">
-                        Deve ter mais de 8 caracteres, incluindo 
+                    <!-- <p class="validator-hint">Deve ter 10 dígitos</p> -->
+                </div>
+
+                <div class="grid grid-cols-2 content-start gap-2">
+                    <div class="space-y-1">
+                        <span class="text-gray-500 text-sm">Senha</span>
+                        <label
+                            class="input validator w-fit flex items-center gap-2"
+                        >
+                            <KeyRound class="h-[1em] opacity-50" />
+                            <input
+                                v-model="form.password"
+                                class="w-1/2"
+                                type="password"
+                                placeholder="Password"
+                                minlength="8"
+                                pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                                title="Deve ter mais de 8 caracteres, incluindo número, letra minúscula e letra maiúscula"
+                                required
+                            />
+                        </label>
+                        <!-- <p class="validator-hint hidden">
+                        Deve ter mais de 8 caracteres, incluindo
                             <br />Pelo menos um número   <br />
                         Pelo menos uma letra minúscula <br />Pelo menos uma letra maiúscula
                     </p> -->
-                </div>
-                <div class="text-left">
-                    <span class="text-sm underline text-[#50d71e]">
-                        <a href="/login">Já possui uma conta? Entrar</a>
-                    </span>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-gray-500 text-sm"
+                            >Confirmar Senha</span
+                        >
+                        <label
+                            class="input validator w-fit flex items-center gap-2"
+                        >
+                            <KeyRound class="h-[1em] opacity-50" />
+                            <input
+                                v-model="confirmarSenha"
+                                class="w-1/2"
+                                type="password"
+                                placeholder="Password"
+                                minlength="8"
+                                pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                                title="Deve ter mais de 8 caracteres, incluindo número, letra minúscula e letra maiúscula"
+                                required
+                            />
+                        </label>
+                    </div>
+                    <div>
+                        <p v-if="erroSenha" class="text-red-300 text-sm mt-1">
+                            {{ erroSenha }}
+                        </p>
+                    </div>
                 </div>
 
-                <div class="flex justify-center p-2">
-                    <button class="btn bg-[#50d71e] w-full rounded-full">
-                        Cadastrar
+                <div class="flex justify-center p-5 w-full">
+                    <button
+                        type="submit"
+                        class="btn bg-[#3DA700] hover:bg-[#388E3C] w-full rounded-xl"
+                    >
+                        <p class="text-[#ffffff]">CADASTRAR</p>
                     </button>
                 </div>
             </form>
