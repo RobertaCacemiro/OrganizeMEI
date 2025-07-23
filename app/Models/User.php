@@ -18,10 +18,12 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'type',
         'name',
         'email',
         'phone',
         'password',
+        'type'
     ];
 
     /**
@@ -47,8 +49,12 @@ class User extends Authenticatable
         ];
     }
 
-    public function getPerfilMEI()
+
+    public function meiProfile()
     {
-        return $this->hasOne(PerfilMEI::class);
+        return $this->belongsToMany(MeiProfile::class, 'mei_profile_user')
+            ->withTimestamps()
+            ->withPivot(['created_at', 'updated_at']);
     }
+
 }

@@ -18,6 +18,7 @@ class LoginController extends Controller
 
         if (Auth::attempt($credenciais)) {
             $request->session()->regenerate();
+            session(['id' => Auth::id(), 'type' => Auth::user()->type]);
             return redirect()->route('home');
         }
 

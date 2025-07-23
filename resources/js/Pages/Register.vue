@@ -94,7 +94,7 @@ function register() {
                 @submit.prevent="register"
             >
                 <div class="space-y-2">
-                    <span class="text-gray-500 text-sm">name</span>
+                    <span class="text-gray-500 text-sm">Nome</span>
                     <label
                         class="input validator w-full flex items-center gap-2"
                     >
@@ -104,7 +104,7 @@ function register() {
                             type="text"
                             class="rounded-md w-full"
                             name="user"
-                            placeholder="name Completo"
+                            placeholder="Nome Completo"
                             pattern="[A-Za-zÀ-ÿ\s]{3,50}"
                             title="Apenas letras e espaços, entre 3 e 50 caracteres"
                             required
@@ -135,7 +135,7 @@ function register() {
                 </div>
 
                 <div class="space-y-1">
-                    <span class="text-gray-500 text-sm">phone</span>
+                    <span class="text-gray-500 text-sm">Telefone</span>
                     <label
                         class="input validator w-full flex items-center gap-2"
                     >
@@ -143,13 +143,13 @@ function register() {
                         <IMaskComponent
                             v-model="form.phone"
                             :mask="[
-                                { mask: '(00) 0000-0000' }, // phone fixo
-                                { mask: '(00) 00000-0000' }, // phone cotando com o digito 9 na frente celular
+                                { mask: '(00) 0000-0000' }, // telefone fixo
+                                { mask: '(00) 00000-0000' }, // telefone cotando com o digito 9 na frente celular
                             ]"
                             type="text"
                             class="tabular-nums"
                             placeholder="(77) 97777-7777"
-                            title="Digite um número de phone válido com DDD"
+                            title="Digite um número de telefone válido com DDD"
                             required
                         />
                     </label>

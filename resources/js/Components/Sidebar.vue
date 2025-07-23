@@ -30,9 +30,17 @@ const menuItems = [
     { label: "BOLETOS", icon: ScanBarcode, route: "/boletos" },
 ];
 
+// Rotas especiais que não estão no menu mas precisam de título no header
+const specialRoutes = {
+    "/perfil-mei": "PERFIL DO MEI",
+};
+
 const page = usePage();
 const telaVisualizacao = computed(() => {
-    return menuItems.find((item) => item.route === page.url);
+    const menuItem = menuItems.find((item) => item.route === page.url);
+    if (menuItem) return menuItem.label;
+
+    return specialRoutes[page.url] || "";
 });
 </script>
 
@@ -97,7 +105,7 @@ const telaVisualizacao = computed(() => {
                         <AlignJustify />
                     </button>
                 </div>
-                <Header :denTela="telaVisualizacao?.label ?? ''" />
+                <Header :denTela="telaVisualizacao" />
             </div>
 
             <!-- Conteúdo da página via slot -->
