@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('mei_profile', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('mei_profile', function (Blueprint $table) {
+            $table->dropColumn('notes');
         });
     }
 
@@ -22,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mei_profile');
+        Schema::table('mei_profile', function (Blueprint $table) {
+            $table->text('notes')->nullable()->default(null);
+        });
     }
 };

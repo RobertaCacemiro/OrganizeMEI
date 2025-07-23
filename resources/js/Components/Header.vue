@@ -1,4 +1,10 @@
 <script setup>
+import { usePage } from "@inertiajs/vue3";
+
+const page = usePage();
+
+const profilePhoto = page.props.auth?.user?.profile_photo;
+
 const props = defineProps({
     denTela: String,
 });
@@ -7,8 +13,8 @@ const props = defineProps({
     <div class="flex-1">
         <div class="text-xl font-bold">{{ denTela }}</div>
     </div>
-    <div class="flex gap-2">
-        <div class="dropdown dropdown-end">
+    <div class="flex gap-2 mr-5">
+        <a href="/perfil-mei">
             <div
                 tabindex="0"
                 role="button"
@@ -16,15 +22,19 @@ const props = defineProps({
             >
                 <div class="w-10 rounded-full">
                     <img
-                        alt="Perfil do Usuário"
-                        src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+                        alt="Foto de perfil do MEI"
+                        :src="
+                            profilePhoto
+                                ? `/storage/${profilePhoto}`
+                                : 'https://placehold.co/200x200'
+                        "
                     />
                 </div>
                 <span
                     class="badge badge-xs badge-primary indicator-item"
                 ></span>
             </div>
-            <ul
+            <!-- <ul
                 tabindex="0"
                 class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
             >
@@ -36,7 +46,7 @@ const props = defineProps({
                 </li>
                 <li><a>Settings</a></li>
                 <li><a>Logout</a></li>
-            </ul>
-        </div>
+            </ul> -->
+        </a>
     </div>
 </template>
