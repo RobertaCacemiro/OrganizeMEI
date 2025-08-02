@@ -8,6 +8,7 @@ const profilePhoto = page.props.auth?.user?.profile_photo;
 const props = defineProps({
     denTela: String,
 });
+
 </script>
 <template>
     <div class="flex-1">

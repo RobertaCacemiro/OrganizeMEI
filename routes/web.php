@@ -3,10 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\ClienteController;
-use App\Http\Controllers\ProfileMeiController;
+
+use App\Http\Controllers\{
+    RegisterController,
+    ProfileMeiController,
+    ClientController,
+};
 
 
 // Rotas para acessar o sistema
@@ -28,7 +31,15 @@ Route::post('/register', [RegisterController::class, 'store']);
 Route::post('/login', [LoginController::class, 'login']);
 
 
-Route::middleware(['auth'])->group(function () {// rota teste
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/perfil-mei', [ProfileMeiController::class, 'index'])->name('profile-mei.index');
+    Route::post('/profile-mei/store', [ProfileMeiController::class, 'store']);
+    Route::post('/profile-mei/{id}/update', [ProfileMeiController::class, 'update']);
+
+
+Route::middleware([ 'require.mei'])->group(function () {
+
     Route::get('/', function () {
         return Inertia::render('Home');
     })->middleware(['auth', 'verified']);
@@ -53,10 +64,6 @@ Route::middleware(['auth'])->group(function () {// rota teste
     /**
      * @description Rota para view de cadastro de usuário
      */
-
-
-
-
     Route::get('/perfil-empresa', function () {
         return Inertia::render('PerfilEmpresa');
     });
@@ -71,14 +78,15 @@ Route::middleware(['auth'])->group(function () {// rota teste
 
 
 
+    Route::get('/clientes', [ClientController::class, 'index'])->name('clientes.index');
+    Route::post('/clientes/store', [ClientController::class, 'store']);
+    // Route::post('/profile-mei/{id}/update', [ClientController::class, 'update']);
+    Route::get('/clientes/{id}/edit', [ClientController::class, 'edit']);
+    Route::get('/api/clientes/{id}', [ClientController::class, 'show']);
+    Route::delete('/clientes/{id}', [ClientController::class, 'destroy']);
 
 
+});
 
-    Route::post('/cadastroCliente', [ClienteController::class, 'store']);
-
-
-    Route::get('/perfil-mei', [ProfileMeiController::class, 'index'])->name('profile-mei.index');
-    Route::post('/profile-mei/store', [ProfileMeiController::class, 'store']);
-    Route::post('/profile-mei/{id}/update', [ProfileMeiController::class, 'update']);
 });
 

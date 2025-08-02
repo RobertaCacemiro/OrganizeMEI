@@ -32,4 +32,9 @@ class MeiProfile extends Model
         return $this->belongsToMany(User::class, 'mei_profile_user')
             ->withTimestamps();
     }
+
+    public function clients()
+    {
+        return $this->hasMany(Client::class, 'mei_id');
+    }
 }

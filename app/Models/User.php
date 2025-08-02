@@ -57,4 +57,9 @@ class User extends Authenticatable
             ->withPivot(['created_at', 'updated_at']);
     }
 
+    public function clients()
+    {
+        return $this->hasMany(Client::class);
+    }
+
 }
