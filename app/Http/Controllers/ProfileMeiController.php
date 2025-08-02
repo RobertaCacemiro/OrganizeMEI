@@ -66,6 +66,7 @@ class ProfileMeiController extends Controller
         $meiProfile = MeiProfile::create($validatedData);
 
         $meiProfile->users()->attach(auth()->id());
+        session(['mei_id' => $meiProfile->id]);
 
         return Inertia::location(route('profile-mei.index'));
     }

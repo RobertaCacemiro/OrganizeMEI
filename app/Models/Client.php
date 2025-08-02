@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Client extends Model
 {
     use HasFactory;
-
     protected $fillable = [
         'user_id',
         'mei_id',
@@ -23,18 +22,16 @@ class Client extends Model
         'city',
         'state',
         'zip_code',
-        'notes',
+        'notes'
     ];
 
-    // Relacionamento com User
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // // Relacionamento com MeiProfile
-    // public function mei()
-    // {
-    //     return $this->belongsTo(MeiProfile::class);
-    // }
+    public function mei()
+    {
+        return $this->belongsTo(MeiProfile::class, 'mei_id');
+    }
 }

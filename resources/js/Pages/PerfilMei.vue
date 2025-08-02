@@ -169,7 +169,7 @@
                             <p class="label">Opcional</p>
                         </fieldset>
                         <fieldset class="fieldset">
-                            <legend class="fieldset-legend">RUA</legend>
+                            <legend class="fieldset-legend">LOGRADOURO</legend>
                             <input
                                 v-model="form.street"
                                 type="text"
@@ -260,11 +260,16 @@
             </div>
         </div>
 
-        <div
-            v-if="toast.visible"
-            class="fixed top-5 right-5 bg-red-600 text-white px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-500"
-        >
-            {{ toast.message }}
+        <div>
+            <!-- Exemplo de chamada do toast -->
+            <Toast
+                v-if="toast.visible"
+                :message="toast.message"
+                :type="toast.type"
+                :position="toast.position"
+                :duration="toast.duration"
+                :size="toast.size"
+            />
         </div>
     </Sidebar>
 </template>
@@ -273,6 +278,7 @@
 import { ref, reactive } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import Sidebar from "@/Components/Sidebar.vue";
+import Toast from "@/Components/Toast.vue"; // ajuste o caminho conforme sua estrutura
 import { fValidaCNPJ } from "@/utils/validators";
 import { useCepService } from "@/utils/cepService"; // Importe o serviço
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/outline"; // Importe o ícone de pesquisa
@@ -295,8 +301,18 @@ const toast = reactive({
     message: "",
 });
 
-function mostrarToast(mensagem, duracao = 4000) {
-    toast.message = mensagem;
+function mostrarToast(
+    msg,
+    tipo = "error",
+    posicao = "bottom-right",
+    duracao = 3000,
+    tamanho = "md"
+) {
+    toast.message = msg;
+    toast.type = tipo;
+    toast.position = posicao;
+    toast.duration = duracao;
+    toast.size = tamanho;
     toast.visible = true;
 
     setTimeout(() => {
@@ -341,6 +357,7 @@ function fValidaRequestForm() {
     const camposEndereco = {
         street: "Rua",
         number: "Número",
+        complement: "Complemento",
         district: "Bairro",
         city: "Cidade",
         state: "Estado",

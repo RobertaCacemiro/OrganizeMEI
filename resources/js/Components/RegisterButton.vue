@@ -1,15 +1,11 @@
 <script setup>
 const props = defineProps({
-    nomenclature: {
-        type: String,
-        required: true,
-    },
-    form: {
-        type: Object,
-        required: true,
-    },
+    nomenclature: String,
+    form: Object,
+    data: Object, // novo! Cliente a ser editado (opcional)
 });
 </script>
+
 <template>
     <button
         class="btn bg-[#3DA700] text-white rounded-lg collapse-arrow"
@@ -20,7 +16,8 @@ const props = defineProps({
 
     <dialog id="my_modal_3" class="modal">
         <div class="modal-box">
-            <component :is="form" />
+            <!-- Passa data como prop para o componente -->
+            <component :is="form" :cliente="data" />
         </div>
     </dialog>
 </template>
