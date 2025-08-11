@@ -31,7 +31,6 @@ const validarSenha = () => {
         form.password
     );
 
-    // console.log(senhaValida);
     if (!senhaValida) {
         erroSenha.value =
             "A senha deve ter mais de 8 caracteres, incluindo número, letra minúscula e letra maiúscula";
@@ -53,7 +52,6 @@ function register() {
     const iesSenhaValida = true;
 
     if (iesSenhaValida) {
-        console.log("FORM", form);
         router.post("/register", form);
     }
 }

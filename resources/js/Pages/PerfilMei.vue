@@ -323,10 +323,6 @@ function mostrarToast(
 const data = props.data;
 const isEdit = props.isEdit;
 
-if (isEdit) {
-    console.log("CNPJ", data.profile_photo);
-}
-
 let form = useForm({
     cnpj: data?.cnpj ?? null,
     identification: data?.identification ?? null,

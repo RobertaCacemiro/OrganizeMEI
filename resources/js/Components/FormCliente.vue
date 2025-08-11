@@ -7,14 +7,6 @@
             <h1 class="text-3xl font-bold text-[#3DA700] mx-auto">
                 Cadastro de Cliente
             </h1>
-
-            <!-- Botão no canto direito -->
-            <button
-                type="button"
-                class="btn btn-sm btn-circle btn-ghost ml-auto"
-            >
-                ✕
-            </button>
         </div>
 
         <!-- Dados Pessoais -->
@@ -149,10 +141,9 @@
 </template>
 
 <script setup>
-import { ref, watch  } from "vue";
+import { ref, watch } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useForm, usePage } from "@inertiajs/vue3";
-
 
 // Mask
 import { IMaskComponent } from "vue-imask";
@@ -168,33 +159,29 @@ function dispatchCpfCnpj(appended, dynamicMasked) {
 }
 
 const props = defineProps({
-    cliente: Object,
+    data: Object,
 });
+
+const data = ref(props.data);
 
 let form = useForm({
-    cpf_cnpj: props.cliente?.cpf_cnpj || "",
-    name: props.cliente?.name || "",
-    email: props.cliente?.email || "",
-    phone: props.cliente?.phone || "",
-    street: props.cliente?.street || "",
-    number: props.cliente?.number || "",
-    complement: props.cliente?.complement || "",
-    district: props.cliente?.district || "",
-    city: props.cliente?.city || "",
-    state: props.cliente?.state || "",
-    zip_code: props.cliente?.zip_code || "",
-    notes: props.cliente?.notes || "",
+    cpf_cnpj: data?.cpf_cnpj || "",
+    name: data?.name || "",
+    email: data?.email || "",
+    phone: data?.phone || "",
+    street: data?.street || "",
+    number: data?.number || "",
+    complement: data?.complement || "",
+    district: data?.district || "",
+    city: data?.city || "",
+    state: data?.state || "",
+    zip_code: data?.zip_code || "",
+    notes: data?.notes || "",
 });
 
-
 const submit = () => {
-    console.log("Formulário");
-    console.log(form);
+    form.post("/clientes/store");
 
-        form.post("/clientes/store");
-
-
-    // console.log("Enviando cliente:", cliente.value);
     //    router.post("/cadastroCliente", cliente.value);
     // Aqui você pode fazer uma request via axios ou Inertia
 };
