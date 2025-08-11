@@ -9,6 +9,7 @@ use App\Http\Controllers\{
     RegisterController,
     ProfileMeiController,
     ClientController,
+    TransactionController
 };
 
 
@@ -84,6 +85,14 @@ Route::middleware([ 'require.mei'])->group(function () {
     Route::get('/clientes/{id}/edit', [ClientController::class, 'edit']);
     Route::get('/api/clientes/{id}', [ClientController::class, 'show']);
     Route::delete('/clientes/{id}', [ClientController::class, 'destroy']);
+
+
+    Route::get('/financeiro', [TransactionController::class, 'index'])->name('financeiro.index');
+    Route::post('/financeiro/store', [TransactionController::class, 'store']);
+    Route::get('/financeiro/{id}/edit', [TransactionController::class, 'edit']);
+    Route::post('/financeiro/{id}/update', [TransactionController::class, 'update']);
+    Route::delete('/financeiro/{id}', [TransactionController::class, 'destroy']);
+
 
 
 });

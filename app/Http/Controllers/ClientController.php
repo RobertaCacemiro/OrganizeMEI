@@ -26,6 +26,10 @@ class ClientController extends Controller
         $query = Client::where('mei_id', $meiId);
         $filters = new ClientFilters($request);
 
+        // showArray(["filtros" => $request]);
+
+        // exit;
+
         $query = $filters->apply($query);
 
 
@@ -121,6 +125,8 @@ class ClientController extends Controller
     public function show($id)
     {
         $cliente = Client::findOrFail($id);
+        // showArray(['TESTE' => $cliente]);
+        // exit;
         return response()->json($cliente);
     }
 
