@@ -54,6 +54,10 @@ class ClientController extends Controller
                 ];
             });
 
+
+            // showArray(["CLIENTES" => $clients]);
+            // exit;
+
         return Inertia::render('Clientes', [
             'data' => $clients,
             'filters' => $request->only(['name', 'cpf_cnpj', 'email']),

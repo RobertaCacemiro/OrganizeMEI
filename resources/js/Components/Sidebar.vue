@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from "vue";
-import { usePage } from "@inertiajs/vue3";
+import { usePage, router } from "@inertiajs/vue3";
 
 import Header from "@/Components/Header.vue";
 
@@ -10,6 +10,7 @@ import { Users } from "lucide-vue-next";
 import { CircleDollarSign } from "lucide-vue-next";
 import { HandCoins } from "lucide-vue-next";
 import { ScanBarcode } from "lucide-vue-next";
+import { LogOut } from "lucide-vue-next";
 
 const isExpanded = ref(false);
 const showMobileSidebar = ref(false);
@@ -42,6 +43,10 @@ const telaVisualizacao = computed(() => {
 
     return specialRoutes[page.url] || "";
 });
+
+function flogout() {
+    router.post("/logout");
+}
 </script>
 
 <template>
@@ -91,12 +96,24 @@ const telaVisualizacao = computed(() => {
                     </a>
                 </li>
             </ul>
+
+            <div class="mt-auto">
+                <button
+                    @click="flogout"
+                    class="flex items-center gap-2 font-bold hover:bg-[#2d8800] p-10 rounded w-full text-left"
+                >
+                    <LogOut />
+                    <span v-if="isExpanded">{{ " SAIR" }}</span>
+                </button>
+            </div>
         </div>
 
         <!-- Conteúdo Principal -->
         <div class="flex-1 flex flex-col">
             <!-- Navbar Top -->
-            <div class="lg:navbar w-[100vw] bg-base-100 shadow px-5 py-3 flex justify-center items-center gap-2 z-10">
+            <div
+                class="lg:navbar w-[100vw] bg-base-100 shadow px-5 py-3 flex justify-center items-center gap-2 z-10"
+            >
                 <div class="lg:hidden">
                     <button
                         @click="toggleMobileMenu"
@@ -160,6 +177,16 @@ const telaVisualizacao = computed(() => {
                             </a>
                         </li>
                     </ul>
+
+                    <div class="mt-auto">
+                        <button
+                            @click="flogout"
+                            class="flex items-center gap-2 font-bold hover:bg-[#2d8800] p-2 rounded w-full text-left"
+                        >
+                            <LogOut />
+                            <span>SAIR</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </transition>

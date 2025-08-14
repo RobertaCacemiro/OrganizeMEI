@@ -49,7 +49,7 @@
                     :columnsName="colunas"
                     :data="data"
                     :on-edit="editar"
-                    :on-delete="abrirConfirmacao"
+                    :on-delete="fAbrirConfirmacao"
                 />
 
                 <ConfirmAction
@@ -112,13 +112,10 @@ const colunas = [
     { label: "TIPO", key: "tipo" },
 ];
 
+const form = useForm({});
+
 let registerButtonRef = ref(null);
 let registroSelecionado = ref({});
-
-function abrirNovo() {
-    registroSelecionado.value = {}; // novo objeto vazio
-    registerButtonRef.value.abrirModal();
-}
 
 function editar(id) {
     const registro = data.value.data.find((item) => item.id === id);
@@ -131,9 +128,8 @@ function editar(id) {
 const confirmDelete = ref(null);
 const currentId = ref(null);
 
-const form = useForm({});
 
-function abrirConfirmacao(id) {
+function fAbrirConfirmacao(id) {
     currentId.value = id;
     confirmDelete.value.openModal();
 }

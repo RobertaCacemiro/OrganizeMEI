@@ -9,6 +9,9 @@ const props = defineProps({
     onDelete: Function,
 });
 
+console.log("Teste cobranças", props.data);
+
+
 function formatValue(value, type) {
     if (type === "money") {
         return `R$ ${Number(value).toLocaleString("pt-BR", {
