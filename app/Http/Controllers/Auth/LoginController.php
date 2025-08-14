@@ -38,7 +38,16 @@ class LoginController extends Controller
         return back()->withErrors([
             'email' => 'As credenciais fornecidas estão incorretas.',
         ])->onlyInput('email');
+    }
 
+    // Função de logout
+    public function logout(Request $request)
+    {
+        Auth::logout(); // desloga o usuário
 
+        $request->session()->invalidate(); // invalida a sessão
+        $request->session()->regenerateToken(); // gera novo token CSRF
+
+        return redirect('/login'); // redireciona para a página de login
     }
 }

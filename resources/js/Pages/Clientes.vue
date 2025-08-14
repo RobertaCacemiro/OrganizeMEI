@@ -59,7 +59,10 @@ const props = defineProps({
     },
 });
 
-const data = ref(props.data);
+const data = ref({
+    data: props.data, // seu array
+    links: [] // vazio se não tiver paginação
+});
 
 // Sempre que os props forem atualizados, atualiza o data também
 watch(

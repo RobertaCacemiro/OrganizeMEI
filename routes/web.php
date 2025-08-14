@@ -9,7 +9,8 @@ use App\Http\Controllers\{
     RegisterController,
     ProfileMeiController,
     ClientController,
-    TransactionController
+    TransactionController,
+    ChargeController
 };
 
 
@@ -26,11 +27,14 @@ Route::get('/login', function () {
     return Inertia::render('Login');
 })->name('login');
 
+
+
 // Rotas post cadastro banco
 Route::post('/register', [RegisterController::class, 'store']);
 
 Route::post('/login', [LoginController::class, 'login']);
 
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth'])->group(function () {
 
@@ -93,6 +97,9 @@ Route::middleware([ 'require.mei'])->group(function () {
     Route::post('/financeiro/{id}/update', [TransactionController::class, 'update']);
     Route::delete('/financeiro/{id}', [TransactionController::class, 'destroy']);
 
+
+    Route::get('/cobrancas', [ChargeController::class, 'index'])->name('cobrancas.index');
+    Route::delete('/cobrancas/{id}', [ChargeController::class, 'destroy']);
 
 
 });

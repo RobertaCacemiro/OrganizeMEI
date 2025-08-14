@@ -14,22 +14,24 @@ class Category extends Model
         'name',
     ];
 
-    // 🔗 Relacionamento com o usuário (dono da categoria)
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // 🔗 Relacionamento com o MEI (perfil da empresa)
     public function meiProfile()
     {
         return $this->belongsTo(MeiProfile::class);
     }
 
-    // 🔗 Relacionamento com as transações
     public function transactions()
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    public function charges()
+    {
+        return $this->hasMany(Charge::class);
     }
 }
 
