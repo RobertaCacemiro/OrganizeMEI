@@ -1,16 +1,63 @@
 <script setup>
-import { Pencil, Trash2 } from "lucide-vue-next";
+import * as LucideIcons from "lucide-vue-next";
+import { computed, ref, watch } from "vue";
 import { Link } from "@inertiajs/vue3";
 
 const props = defineProps({
     columnsName: Array,
-    data: Object, // paginator
-    onEdit: Function,
-    onDelete: Function,
+    data: Object,
+    actions: {
+        type: Array,
+        default: () => [
+            {
+                icon: Pencil,
+                color: "blue-800",
+                onClick: (id) => console.log("Editar", id),
+            },
+            {
+                icon: Trash2,
+                color: "red-800",
+                onClick: (id) => console.log("Excluir", id),
+            },
+        ],
+    },
 });
 
-console.log("Teste cobranças", props.data);
+console.log("Data do Table", props.data);
 
+// Armazena os itens selecionados
+const selectedItems = ref([]);
+
+// Computed para converter ícones
+const actionsWithIcons = computed(() => {
+    if (!props.actions) return [];
+    return props.actions.map((action) => ({
+        ...action,
+        icon: action.icon ? LucideIcons[action.icon] : null,
+    }));
+});
+
+// Se todos estão selecionados
+const allSelected = computed({
+    get: () =>
+        props.data.data?.length > 0 &&
+        selectedItems.value.length === props.data.data.length,
+    set: (val) => {
+        if (val) {
+            selectedItems.value = props.data.data.map((item) => item.id);
+        } else {
+            selectedItems.value = [];
+        }
+    },
+});
+
+function toggleSelection(id) {
+    if (selectedItems.value.includes(id)) {
+        selectedItems.value = selectedItems.value.filter((x) => x !== id);
+    } else {
+        selectedItems.value.push(id);
+    }
+}
 
 function formatValue(value, type) {
     if (type === "money") {
@@ -29,7 +76,14 @@ function formatValue(value, type) {
         <table class="table table-zebra min-w-[600px] md:min-w-[800px]">
             <thead>
                 <tr>
-                    <th><input type="checkbox" class="checkbox" /></th>
+                    <!-- Checkbox principal -->
+                    <th>
+                        <input
+                            type="checkbox"
+                            class="checkbox"
+                            v-model="allSelected"
+                        />
+                    </th>
                     <th
                         v-for="(column, index) in columnsName"
                         :key="index"
@@ -37,42 +91,62 @@ function formatValue(value, type) {
                     >
                         {{ column.label }}
                     </th>
+                    <th>
+                        <button
+                            class="btn bg-[#FF0017] text-white rounded-lg collapse-arrow"
+                            @click="fAbrirConfirmacao(selectedItems)"
+                        >
+                            EXCLUIR
+                        </button>
+                    </th>
                 </tr>
             </thead>
+
             <tbody>
                 <tr v-for="(item, rowIndex) in data.data" :key="rowIndex">
-                    <td><input type="checkbox" class="checkbox" /></td>
+                    <!-- Checkbox individual -->
+                    <td>
+                        <input
+                            type="checkbox"
+                            class="checkbox"
+                            :checked="selectedItems.includes(item.id)"
+                            @change="toggleSelection(item.id)"
+                        />
+                    </td>
+
                     <td
                         v-for="(column, colIndex) in columnsName"
                         :key="colIndex"
                     >
                         {{ formatValue(item[column.key], column.type) }}
                     </td>
+
                     <td class="flex gap-2">
                         <button
-                            @click="onEdit?.(item.id)"
-                            class="text-[#000000] hover:text-blue-800"
+                            v-for="(action, aIndex) in actionsWithIcons"
+                            :key="aIndex"
+                            @click="action.onClick?.(item.id)"
+                            class="text-[#000000]"
+                            :class="`hover:text-${action.color}`"
                         >
-                            <Pencil class="w-5 h-5" />
-                        </button>
-                        <button
-                            @click="onDelete?.(item.id)"
-                            class="text-[#000000] hover:text-red-800"
-                        >
-                            <Trash2 class="w-5 h-5" />
+                            <component
+                                v-if="action.icon"
+                                :is="action.icon"
+                                class="w-5 h-5"
+                            />
                         </button>
                     </td>
                 </tr>
             </tbody>
         </table>
-
-        <!-- Paginação -->
     </div>
+
+    <!-- Paginação -->
     <div
         v-if="data.links && data.links.length > 3"
         class="flex justify-center mt-4 gap-2 items-center"
     >
-        <template v-for="(link, index) in data.links" :key="index">
+        <div v-for="(link, index) in data.links" :key="index">
             <!-- Botão Anterior -->
             <Link
                 v-if="index === 0 && link.url"
@@ -171,6 +245,6 @@ function formatValue(value, type) {
                     />
                 </svg>
             </span>
-        </template>
+        </div>
     </div>
 </template>

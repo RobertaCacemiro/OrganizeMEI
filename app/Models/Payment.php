@@ -5,18 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Charge extends Model
+class Payment extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'user_id',
         'mei_id',
         'client_id',
-        'amount',
-        'description',
-        'due_date',
-        'payment_date',
+        'charge_id',
         'status',
+        'due_date',
+        'amount',
+        'payment_date',
+        'sent',
+        'resent_by',
     ];
 
     public function user()
@@ -26,7 +29,7 @@ class Charge extends Model
 
     public function mei()
     {
-        return $this->belongsTo(MeiProfile::class, 'mei_id');
+        return $this->belongsTo(MeiProfile::class);
     }
 
     public function client()
@@ -34,8 +37,13 @@ class Charge extends Model
         return $this->belongsTo(Client::class);
     }
 
-    public function payments()
+    public function charge()
     {
-        return $this->hasMany(Payment::class);
+        return $this->belongsTo(Charge::class);
+    }
+
+    public function resentBy()
+    {
+        return $this->belongsTo(User::class, 'resent_by');
     }
 }

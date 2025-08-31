@@ -33,9 +33,10 @@ class ClientController extends Controller
         $query = $filters->apply($query);
 
 
-        $clients = $query->orderBy('name', 'asc')->orderBy('created_at', 'asc')
-            ->get()
-            ->map(function ($client) {
+        $clients = $query->orderBy('name', 'asc')
+            ->orderBy('created_at', 'asc')
+            ->paginate(10) // quantidade de itens por página
+            ->through(function ($client) {
                 return [
                     'id' => $client->id,
                     'cpf_cnpj' => $client->cpf_cnpj,
@@ -51,16 +52,17 @@ class ClientController extends Controller
                         $client->state,
                         $client->zip_code,
                     ])->filter()->implode(', '),
+                    'observacao' => $client->notes
                 ];
             });
 
 
-            // showArray(["CLIENTES" => $clients]);
-            // exit;
+        // showArray(["CLIENTES" => $clients]);
+        // exit;
 
         return Inertia::render('Clientes', [
             'data' => $clients,
-            'filters' => $request->only(['name', 'cpf_cnpj', 'email']),
+            'filters' => $request->all()
         ]);
     }
 

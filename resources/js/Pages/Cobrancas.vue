@@ -10,12 +10,24 @@
                     :adicional="clientes"
                 />
             </div>
+
+            <div class="pb-4">
+                <DashboardPages :cards="cards" />
+            </div>
+
             <div class="mt-6">
                 <Table
                     :columnsName="colunas"
                     :data="data"
-                    :on-edit="editar"
-                    :on-delete="fAbrirConfirmacao"
+                    :actions="[
+                        { icon: Pencil, color: '#3B82F6', onClick: editar },
+                        {
+                            icon: Trash2,
+                            color: '#EF4444',
+                            onClick: fAbrirConfirmacao,
+                        },
+                        { icon: Eye, color: '#10B981', onClick: visualizar },
+                    ]"
                 />
 
                 <ConfirmAction
@@ -31,30 +43,37 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, reactive } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
 import Sidebar from "@/Components/Sidebar.vue";
 import Table from "@/Components/Table.vue";
+import DashboardPages from "@/Components/DashboardPages.vue";
 
 import RegisterButton from "../Components/RegisterButton.vue";
 import FormCobranca from "../Components/FormCobranca.vue";
 import ConfirmAction from "../Components/ConfirmAction.vue";
-
 
 const props = defineProps({
     data: {
         type: Object,
         default: () => ({}),
     },
-    clientes: {
+    clients: {
+        type: Object,
+        default: () => ({}),
+    },
+    dashboardValues: {
         type: Object,
         default: () => ({}),
     },
 });
 
+console.log(props);
+
 const data = ref(props.data);
-// console.log("Teste cobranças", data);
+const clientes = ref(props.clients);
+const dashboardValues = reactive(props.dashboardValues);
 
 const colunas = [
     { label: "STATUS", key: "status" },
@@ -62,6 +81,44 @@ const colunas = [
     { label: "VENCIMENTO", key: "data_vencimento" },
     { label: "VALOR", key: "valor", type: "money" },
     { label: "DATA DE PAGAMENTO", key: "data_pagamento" },
+];
+
+const cards = [
+    {
+        title: "Total de Cobranças:",
+        titleSize: "text-base",
+        description: dashboardValues.total_cobrancas,
+        descriptionSize: "text-3xl",
+        descriptionColor: "text-black",
+        descriptionWeight: "font-bold",
+    },
+    {
+        title: "Pagos:",
+        titleSize: "text-base",
+        description: dashboardValues.total_pagos,
+        descriptionSize: "text-3xl",
+        descriptionColor: "text-black",
+        descriptionWeight: "font-bold",
+        titleColor: "text-white",
+        descriptionColor: "text-white",
+        color: "bg-[#3DA700]",
+    },
+    {
+        title: "Pendentes:",
+        titleSize: "text-base",
+        description: dashboardValues.total_pendentes,
+        descriptionSize: "text-3xl",
+        descriptionColor: "text-black",
+        descriptionWeight: "font-bold",
+    },
+    {
+        title: "Atrasados:",
+        titleSize: "text-base",
+        description: dashboardValues.total_atrasados,
+        descriptionSize: "text-3xl",
+        descriptionColor: "text-black",
+        descriptionWeight: "font-bold",
+    },
 ];
 
 const form = useForm({});

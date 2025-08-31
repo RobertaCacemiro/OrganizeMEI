@@ -10,80 +10,101 @@ use App\Models\Category;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 
 class TransactionController extends Controller
 {
-
     public function index(Request $request)
-{
-    $userId = auth()->id();
-    $meiId = session('mei_id');
+    {
+        $userId = auth()->id();
+        $meiId = session('mei_id');
 
-    $query = Transaction::with('category')
-        ->where('user_id', $userId)
-        ->where('mei_id', $meiId);
+        if (!$meiId) {
+            return redirect()->route('profile-mei.index')->withErrors([
+                'mei' => 'Perfil MEI não associado à sessão.',
+            ]);
+        }
 
-    // FILTROS
-    if ($request->filled('category_id')) {
-        $query->where('category_id', $request->category_id);
-    }
+        $query = Transaction::with('category')
+            ->where('user_id', $userId)
+            ->where('mei_id', $meiId);
 
-    if ($request->filled('tipo')) {
-        $query->where('type', $request->tipo);
-    }
+        // FILTROS
+        if ($request->filled('descricao')) {
+            $query->where('description', 'like', "%{$request->descricao}%");
+        }
 
-    if ($request->filled('date_start') && $request->filled('date_end')) {
-        $query->whereBetween('transaction_date', [
-            $request->date_start,
-            $request->date_end
+        if ($request->filled('categoria')) {
+            $query->where('category_id', $request->categoria);
+        }
+
+        if ($request->filled('tipo')) {
+            $query->where('type', $request->tipo);
+        }
+
+        if ($request->filled('data')) {
+            $query->where('transaction_date', $request->data);
+        }
+
+        $lancamentos = $query
+            ->orderBy('transaction_date', 'desc')
+            ->paginate(10)
+            ->withQueryString() 
+            ->through(function ($lancamento) {
+                return [
+                    'id' => $lancamento->id,
+                    'category' => $lancamento->category->name ?? 'Sem categoria',
+                    'date' => Carbon::parse($lancamento->transaction_date)->format('d/m/Y'),
+                    'valor' => $lancamento->amount,
+                    'tipo' => $lancamento->type == 1 ? 'Despesa' : 'Receita',
+                    'descricao' => $lancamento->description,
+                    'observation' => $lancamento->observation,
+                ];
+            });
+
+        $categorias = Category::where(function ($query) use ($userId, $meiId) {
+            $query->where('user_id', $userId)
+                ->where('mei_id', $meiId);
+        })
+            ->orWhere(function ($query) {
+                $query->whereNull('user_id')
+                    ->whereNull('mei_id');
+            })
+            ->orderBy('name')
+            ->get();
+
+        $dashboardValues = $this->getDashboardValues();
+
+        return Inertia::render('Financeiro', [
+            'data' => $lancamentos,
+            'categories' => $categorias,
+            'dashboardValues' => $dashboardValues,
+            'filters' => $request->all()
         ]);
     }
 
-    if ($request->filled('descricao')) {
-        $query->where('description', 'like', "%{$request->descricao}%");
-    }
+    public function getDashboardValues()
+    {
+        $userId = auth()->id();
+        $meiId = session('mei_id');
 
-    $lancamentos = $query
-        ->orderBy('transaction_date', 'desc')
-        ->paginate(10)
-        ->withQueryString() // ← mantém filtros ao trocar de página
-        ->through(function ($lancamento) {
-            return [
-                'id' => $lancamento->id,
-                'category' => $lancamento->category->name ?? 'Sem categoria',
-                'date' => Carbon::parse($lancamento->transaction_date)->format('d/m/Y'),
-                'valor' => $lancamento->amount,
-                'tipo' => $lancamento->type == 1 ? 'Despesa' : 'Receita',
-                'descricao' => $lancamento->description,
-                'observation' => $lancamento->observation,
-            ];
-        });
-
-    $categorias = Category::where(function ($query) use ($userId, $meiId) {
-        $query->where('user_id', $userId)
+        $query = Transaction::where('user_id', $userId)
             ->where('mei_id', $meiId);
-    })
-    ->orWhere(function ($query) {
-        $query->whereNull('user_id')
-            ->whereNull('mei_id');
-    })
-    ->orderBy('name')
-    ->get();
 
-    return Inertia::render('Financeiro', [
-        'data' => $lancamentos,
-        'categories' => $categorias,
-        'filters' => $request->only([
-            'category_id',
-            'tipo',
-            'date_start',
-            'date_end',
-            'descricao'
-        ])
-    ]);
-}
+        // Somar receitas e despesas
+        $totalReceitas = (clone $query)->where('type', 1)->sum('amount');
+        $totalDespesas = (clone $query)->where('type', 2)->sum('amount');
 
+        // Calcular saldo
+        $saldo = $totalReceitas - $totalDespesas;
+
+        return [
+            'total_receitas' => 'R$ ' . number_format($totalReceitas, 2, ',', '.'),
+            'total_despesas' => 'R$ ' . number_format($totalDespesas, 2, ',', '.'),
+            'saldo' => 'R$ ' . number_format($saldo, 2, ',', '.'),
+        ];
+    }
 
     public function store(Request $request)
     {
@@ -141,25 +162,35 @@ class TransactionController extends Controller
     }
 
 
-    public function destroy($id)
+    public function destroy(Request $request)
     {
-        $launch = Transaction::findOrFail($id);
+        $ids = $request->ids; // array de IDs
 
         $userId = auth()->id();
         $meiId = session('mei_id');
 
-        if ($launch->mei_id !== $meiId) {
-            abort(403, 'Acesso negado: lançamento não pertence ao seu MEI.');
+        if (!$ids || !is_array($ids)) {
+            return response()->json(['message' => 'Nenhum registro selecionado'], 400);
         }
 
-        if ($launch->user_id !== $userId) {
-            abort(403, 'Acesso negado: você não cadastrou esse lançamento.');
+        // Busca os lançamentos correspondentes aos IDs enviados
+        $launches = Transaction::whereIn('id', $ids)->get();
+
+        // Verifica se o usuário tem permissão para excluir cada lançamento
+        foreach ($launches as $launch) {
+            if ($launch->mei_id !== $meiId) {
+                abort(403, "Acesso negado: lançamento ID {$launch->id} não pertence ao seu MEI.");
+            }
+
+            if ($launch->user_id !== $userId) {
+                abort(403, "Acesso negado: você não cadastrou o lançamento ID {$launch->id}.");
+            }
         }
 
-        $launch->delete();
+        // Se passou em todas as validações, exclui
+        Transaction::whereIn('id', $ids)->delete();
 
-        return Inertia::location(route('financeiro.index'));
-
+        return redirect()->back()->with('success', 'Registros excluídos com sucesso.');
     }
 
 }

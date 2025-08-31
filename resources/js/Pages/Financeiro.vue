@@ -11,22 +11,26 @@
                 />
             </div>
 
+            <div class="pb-4">
+                <DashboardPages :cards="cards" />
+            </div>
+
             <div>
                 <FiltroTabela
                     :campos="[
                         {
-                            name: 'description',
+                            name: 'descricao',
                             type: 'text',
                             placeholder: 'Descrição',
                         },
                         {
-                            name: 'category_id',
+                            name: 'categoria',
                             type: 'select',
                             placeholder: 'Categoria',
                             options: categoriasOptions,
                         },
                         {
-                            name: 'type',
+                            name: 'tipo',
                             type: 'select',
                             placeholder: 'Tipo',
                             options: [
@@ -35,29 +39,25 @@
                             ],
                         },
                         {
-                            name: 'transaction_date',
+                            name: 'data',
                             type: 'date',
                             placeholder: 'Data',
                         },
                     ]"
+                    :definedValues="filters"
                     @submit="fAplicarFiltro"
                 />
             </div>
 
             <div class="mt-6">
-                <Table
-                    :columnsName="colunas"
-                    :data="data"
-                    :on-edit="editar"
-                    :on-delete="fAbrirConfirmacao"
-                />
+                <Table :columnsName="colunas" :data="data" :actions="actions" />
 
                 <ConfirmAction
                     ref="confirmDelete"
                     title="Exclusão de Registro"
                     message="Tem certeza que deseja excluir este registro financeiro?"
                     :id="currentId"
-                    @confirm="excluir"
+                    @confirm="fExcluir"
                 />
             </div>
         </div>
@@ -65,7 +65,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, reactive } from "vue";
 import { useForm, router } from "@inertiajs/vue3";
 
 import FiltroTabela from "../Components/FiltroTabela.vue";
@@ -75,6 +75,7 @@ import ConfirmAction from "../Components/ConfirmAction.vue";
 
 import Sidebar from "@/Components/Sidebar.vue";
 import Table from "@/Components/Table.vue";
+import DashboardPages from "@/Components/DashboardPages.vue";
 
 const props = defineProps({
     data: {
@@ -85,24 +86,44 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    dashboardValues: {
+        type: Object,
+        default: () => ({}),
+    },
+    filters: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 const data = ref(props.data);
+const filters = ref(props.filters);
+const dashboardValues = reactive(props.dashboardValues);
+
+watch(
+    () => props.data,
+    (newData) => {
+        data.value = newData;
+    }
+);
+
+const form = useForm({});
 const categories = ref(props.categories);
 
 let categoriasOptions = [];
 
 if (Array.isArray(categories.value)) {
-  categoriasOptions = categories.value.map(cat => ({
-    value: cat.id,
-    label: cat.name,
-  }));
+    categoriasOptions = categories.value.map((cat) => ({
+        value: cat.id,
+        label: cat.name,
+    }));
 } else if (categories.value && Array.isArray(categories.value.data)) {
-  categoriasOptions = categories.value.data.map(cat => ({
-    value: cat.id,
-    label: cat.name,
-  }));
+    categoriasOptions = categories.value.data.map((cat) => ({
+        value: cat.id,
+        label: cat.name,
+    }));
 }
+
 
 const colunas = [
     { label: "DATA", key: "date" },
@@ -112,12 +133,48 @@ const colunas = [
     { label: "TIPO", key: "tipo" },
 ];
 
-const form = useForm({});
+const actions = [
+    { icon: "Pencil", color: "blue-800", onClick: fEditar },
+    { icon: "Trash2", color: "red-800", onClick: fAbrirConfirmacao },
+];
+
+const cards = [
+    {
+        title: "Total de Receitas:",
+        titleSize: "text-base",
+        description: dashboardValues.total_receitas,
+        descriptionSize: "text-2xl",
+        icon: "CircleArrowUp",
+        iconColor: "text-green-700",
+        descriptionColor: "text-black",
+        descriptionWeight: "font-bold",
+    },
+    {
+        title: "Total de Despesas:",
+        titleSize: "text-base",
+        description: dashboardValues.total_despesas,
+        descriptionSize: "text-2xl",
+        icon: "CircleArrowDown",
+        iconColor: "text-red-600",
+        descriptionColor: "text-black",
+        descriptionWeight: "font-bold",
+    },
+    {
+        title: "Saldo Atual:",
+        titleSize: "text-base",
+        description: dashboardValues.saldo,
+        descriptionSize: "text-2xl",
+        descriptionWeight: "font-bold",
+        titleColor: "text-white",
+        descriptionColor: "text-white",
+        color: "bg-[#3DA700]",
+    },
+];
 
 let registerButtonRef = ref(null);
 let registroSelecionado = ref({});
 
-function editar(id) {
+function fEditar(id) {
     const registro = data.value.data.find((item) => item.id === id);
     if (!registro) return;
 
@@ -128,26 +185,27 @@ function editar(id) {
 const confirmDelete = ref(null);
 const currentId = ref(null);
 
-
 function fAbrirConfirmacao(id) {
     currentId.value = id;
     confirmDelete.value.openModal();
 }
 
-function excluir(id) {
-    form.delete(`/financeiro/${id}`, {
+function fExcluir(id) {
+    form.delete(`/financeiro/exclusao`, {
+        data: { ids: selectedItems.value },
         preserveScroll: true,
     });
 }
 
 function fAplicarFiltro(filtros) {
-    form.get(
-        "/financeiro",
-        filtros,
-        {
-            preserveScroll: true,
-            preserveState: true,
-        }
-    );
+    router.get("/financeiro", filtros, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
+}
+
+function visualizar() {
+    console.log("Teste");
 }
 </script>

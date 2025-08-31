@@ -5,7 +5,7 @@
     >
         <!-- Título e botão de fechar -->
         <div class="relative mb-6 text-center">
-            <h1 class="text-2xl font-bold text-[#3DA700]">Novo Lançamento</h1>
+            <h1 class="text-2xl font-bold text-[#3DA700]">NOVO LANÇAMENTO</h1>
         </div>
 
         <!-- Data e Valor -->
@@ -32,54 +32,56 @@
         </div>
 
         <!-- Tipo -->
-        <div class="mb-4">
-            <label class="label">Tipo</label>
-            <div class="flex gap-4">
-                <label class="flex items-center gap-2">
-                    <input
-                        type="radio"
-                        value="1"
-                        v-model="form.type"
-                        class="radio radio-error"
-                    />
-                    Despesa
-                </label>
-                <label class="flex items-center gap-2">
-                    <input
-                        type="radio"
-                        value="2"
-                        v-model="form.type"
-                        class="radio radio-success"
-                    />
-                    Receita
-                </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+                <label class="label">Tipo</label>
+                <div class="flex gap-4">
+                    <label class="flex items-center gap-2">
+                        <input
+                            type="radio"
+                            value="1"
+                            v-model="form.type"
+                            class="radio radio-error"
+                        />
+                        Despesa
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input
+                            type="radio"
+                            value="2"
+                            v-model="form.type"
+                            class="radio radio-success"
+                        />
+                        Receita
+                    </label>
+                </div>
             </div>
-        </div>
-
-        <!-- Categoria + botão -->
-        <div class="mb-4">
-            <label class="label">Categoria</label>
-            <div class="flex gap-2">
-                <select
-                    v-model="form.category_id"
-                    class="select select-bordered w-full"
-                    required
-                >
-                    <option disabled value="">Selecione uma categoria</option>
-                    <option
-                        v-for="categoria in categories"
-                        :key="categoria.id"
-                        :value="categoria.id"
+            <div>
+                <label class="label">Categoria</label>
+                <div class="flex gap-2">
+                    <select
+                        v-model="form.category_id"
+                        class="select select-bordered w-full"
+                        required
                     >
-                        {{ categoria.name }}
-                    </option>
-                </select>
-                <button
-                    type="button"
-                    class="btn btn-success btn-square text-white"
-                >
-                    +
-                </button>
+                        <option disabled value="">
+                            Selecione uma categoria
+                        </option>
+                        <option
+                            v-for="categoria in categories"
+                            :key="categoria.id"
+                            :value="categoria.id"
+                        >
+                            {{ categoria.name }}
+                        </option>
+                    </select>
+                    <button
+                        type="button"
+                        class="btn btn-square bg-[#3DA700] text-white"
+                    >
+                        +
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -106,19 +108,19 @@
         </div>
 
         <!-- Botões -->
-        <div class="flex justify-between mt-6">
+        <div class="flex gap-4 mt-6">
             <button
                 type="button"
-                class="btn bg-red-600 text-white hover:bg-red-700"
+                class="btn flex-1 bg-[#FF0017] text-white hover:bg-red-700 rounded-xl"
                 @click="$emit('close')"
             >
-                Cancelar
+                CANCELAR
             </button>
             <button
                 type="submit"
-                class="btn bg-green-600 text-white hover:bg-green-700"
+                class="btn flex-1 bg-[#3DA700] text-white hover:bg-green-700 rounded-xl"
             >
-                Salvar
+                SALVAR
             </button>
         </div>
     </form>

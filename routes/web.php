@@ -10,7 +10,8 @@ use App\Http\Controllers\{
     ProfileMeiController,
     ClientController,
     TransactionController,
-    ChargeController
+    ChargeController,
+    PaymentController
 };
 
 
@@ -61,8 +62,8 @@ Route::middleware([ 'require.mei'])->group(function () {
         return Inertia::render('Cobrancas');
     });
 
-    Route::get('/boletos', function () {
-        return Inertia::render('Boletos');
+    Route::get('/pagamentos', function () {
+        return Inertia::render('Pagamentos');
     });
 
 
@@ -82,7 +83,6 @@ Route::middleware([ 'require.mei'])->group(function () {
     })->name('home');
 
 
-
     Route::get('/clientes', [ClientController::class, 'index'])->name('clientes.index');
     Route::post('/clientes/store', [ClientController::class, 'store']);
     // Route::post('/profile-mei/{id}/update', [ClientController::class, 'update']);
@@ -90,16 +90,18 @@ Route::middleware([ 'require.mei'])->group(function () {
     Route::get('/api/clientes/{id}', [ClientController::class, 'show']);
     Route::delete('/clientes/{id}', [ClientController::class, 'destroy']);
 
-
     Route::get('/financeiro', [TransactionController::class, 'index'])->name('financeiro.index');
     Route::post('/financeiro/store', [TransactionController::class, 'store']);
     Route::get('/financeiro/{id}/edit', [TransactionController::class, 'edit']);
     Route::post('/financeiro/{id}/update', [TransactionController::class, 'update']);
-    Route::delete('/financeiro/{id}', [TransactionController::class, 'destroy']);
-
+    Route::delete('/financeiro/exclusao', [TransactionController::class, 'destroy']);
 
     Route::get('/cobrancas', [ChargeController::class, 'index'])->name('cobrancas.index');
+    Route::post('/cobrancas/store', [ChargeController::class, 'store']);
     Route::delete('/cobrancas/{id}', [ChargeController::class, 'destroy']);
+
+    Route::get('/pagamentos', [PaymentController::class, 'index'])->name('pagamentos.index');
+
 
 
 });
