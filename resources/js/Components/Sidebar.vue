@@ -28,7 +28,7 @@ const menuItems = [
     { label: "CLIENTES", icon: Users, route: "/clientes" },
     { label: "FINANCEIRO", icon: CircleDollarSign, route: "/financeiro" },
     { label: "COBRANÇAS", icon: HandCoins, route: "/cobrancas" },
-    { label: "BOLETOS", icon: ScanBarcode, route: "/boletos" },
+    { label: "PAGAMENTOS", icon: ScanBarcode, route: "/pagamentos" },
 ];
 
 // Rotas especiais que não estão no menu mas precisam de título no header
@@ -37,11 +37,17 @@ const specialRoutes = {
 };
 
 const page = usePage();
+
+function fLimpaURL(url) {
+    return url.split("?")[0].split("#")[0];
+}
 const telaVisualizacao = computed(() => {
-    const menuItem = menuItems.find((item) => item.route === page.url);
+    const fLimpaURL = page.url.split("?")[0];
+
+    const menuItem = menuItems.find((item) => item.route === fLimpaURL);
     if (menuItem) return menuItem.label;
 
-    return specialRoutes[page.url] || "";
+    return specialRoutes[fLimpaURL] || "";
 });
 
 function flogout() {
@@ -86,7 +92,7 @@ function flogout() {
                         :href="value.route"
                         :class="[
                             'font-bold flex items-center gap-2',
-                            $page.url === value.route
+                            fLimpaURL($page.url) === value.route
                                 ? 'bg-[#2d8800] text-black'
                                 : 'hover:bg-[#2d8800]',
                         ]"

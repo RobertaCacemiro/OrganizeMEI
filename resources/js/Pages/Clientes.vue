@@ -3,7 +3,7 @@
         <div class="px-4">
             <div class="flex justify-end items-center pb-3">
                 <RegisterButton
-                    :nomenclature="'CADASTRAR'"
+                    :nomenclature="'CADASTRAR CLIENTE'"
                     :form="FormCliente"
                 />
             </div>
@@ -29,24 +29,32 @@
                 <Table
                     :columns-name="colunas"
                     :data="data"
-                    :on-edit="editar"
-                    :on-delete="excluir"
+                    :actions="actions"
+                />
+
+                <ConfirmAction
+                    ref="confirmDelete"
+                    title="Exclusão de Registro"
+                    message="Tem certeza que deseja excluir este registro financeiro?"
+                    :id="currentId"
+                    @confirm="excluir"
                 />
             </div>
         </div>
     </Sidebar>
 </template>
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, reactive } from "vue";
 import { useForm, router } from "@inertiajs/vue3";
 import axios from "axios";
 
 import Sidebar from "@/Components/Sidebar.vue";
 import Table from "@/Components/Table.vue";
-import RegisterButton from "../Components/RegisterButton.vue";
 import FiltroTabela from "../Components/FiltroTabela.vue";
 
+import RegisterButton from "../Components/RegisterButton.vue";
 import FormCliente from "../Components/FormCliente.vue";
+import ConfirmAction from "../Components/ConfirmAction.vue";
 
 const props = defineProps({
     data: {
@@ -59,10 +67,8 @@ const props = defineProps({
     },
 });
 
-const data = ref({
-    data: props.data, // seu array
-    links: [] // vazio se não tiver paginação
-});
+const data = ref(props.data);
+const filters = ref(props.filters);
 
 // Sempre que os props forem atualizados, atualiza o data também
 watch(
@@ -78,15 +84,29 @@ const colunas = [
     { label: "E-MAIL", key: "email" },
     { label: "TELEFONE", key: "phone" },
     { label: "ENDEREÇO", key: "address" },
+    { label: "OBSERVAÇÃO", key: "observacao" },
+
 ];
 
-function editar(id) {
+const actions = [
+    { icon: "Pencil", color: "blue-800", onClick: fEditar },
+    { icon: "Trash2", color: "red-800", onClick: fAbrirConfirmacao },
+];
+
+function fEditar (id) {
     axios.get(`/api/clientes/${id}`).then((response) => {
         edicaoForm.value = response.data; // Preenche o formulário
         modalAberto.value = true; // Abre o modal
     });
 }
 
+const confirmDelete = ref(null);
+const currentId = ref(null);
+
+function fAbrirConfirmacao(id) {
+    currentId.value = id;
+    confirmDelete.value.openModal();
+}
 
 function excluir(id) {
     if (confirm("Tem certeza que deseja excluir este cliente?")) {
@@ -100,18 +120,11 @@ const form = useForm({
     email: props.filters?.email || "",
 });
 
-function fAplicarFiltro() {
-    form.get(
-        "/clientes",
-        {
-            name: form.name,
-            cpf_cnpj: form.cpf_cnpj,
-            email: form.email,
-        },
-        {
-            preserveScroll: true,
-            preserveState: true,
-        }
-    );
+function fAplicarFiltro(filtros) {
+    router.get("/clientes", filtros, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
 }
 </script>

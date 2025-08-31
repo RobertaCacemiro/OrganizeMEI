@@ -1,20 +1,19 @@
 <template>
     <Sidebar>
         <div class="px-4">
-            <div class="flex justify-end items-center pb-3">
+            <!-- <div class="flex justify-end items-center pb-3">
                 <RegisterButton
                     ref="registerButtonRef"
                     :nomenclature="'NOVO LANÇAMENTO'"
                     :form="FormBoleto"
                     :data="registroSelecionado"
                 />
-            </div>
+            </div> -->
             <div class="mt-6">
                 <Table
                     :columnsName="colunas"
                     :data="data"
-                    :on-edit="editar"
-                    :on-delete="excluir"
+                    :actions="actions"
                 />
 
                 <ConfirmAction
@@ -53,12 +52,21 @@ const props = defineProps({
 
 const data = ref(props.data);
 
+console.log("Data", data);
+
 const colunas = [
     { label: "STATUS", key: "status" },
     { label: "CLIENTE", key: "cliente" },
-    { label: "VENCIMENTO", key: "vencimento" },
-    { label: "VALOR", key: "valor" },
+    { label: "VENCIMENTO", key: "data_vencimento" },
+    { label: "VALOR", key: "valor", type: "money" },
     { label: "DATA DE PAGAMENTO", key: "dataPagamento" },
+    { label: "DATA DE ENVIO", key: "data_envio" },
+    { label: "ANEXOS", key: "dataPagamento" }
+];
+
+const actions = [
+    { icon: "Pencil", color: "blue-800", onClick: fEditar },
+    { icon: "Trash2", color: "red-800", onClick: fAbrirConfirmacao },
 ];
 
 const form = useForm({});
@@ -66,7 +74,7 @@ const form = useForm({});
 let registerButtonRef = ref(null);
 let registroSelecionado = ref({});
 
-function editar(id) {
+function fEditar(id) {
     console.log("Editar");
 }
 

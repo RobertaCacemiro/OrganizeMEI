@@ -1,34 +1,58 @@
 <template>
-  <div class="flex gap-4">
-    <div
-      v-for="item in data"
-      :key="item.id"
-      :class="cardClass(item.type)"
-      class="rounded-lg p-4 flex-1"
-    >
-      <div class="text-xs font-semibold mb-1">{{ item.title }}</div>
-      <div class="text-lg font-bold mb-1">
-        R$ {{ item.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) }}
-      </div>
-      <div v-if="item.type !== 'saldo'" class="text-green-600 flex items-center gap-1 text-xs">
-        <component :is="item.type === 'receita' ? 'ArrowUpIcon' : 'ArrowDownIcon'" />
-      </div>
+    <div class="flex gap-4 flex-wrap">
+        <div
+            v-if="cardsWithIcons.length"
+            v-for="(card, index) in cardsWithIcons"
+            :key="index"
+            :class="[
+                card.color ? card.color : 'bg-gray-200',
+                'rounded-xl p-5 flex-1',
+            ]"
+        >
+            <div class="flex justify-between items-center mb-2">
+                <h2
+                    :class="[
+                        card.titleColor ? card.titleColor : 'text-black',
+                        card.titleSize ? card.titleSize : 'text-xl',
+                        card.titleWeight ? card.titleWeight : 'font-bold',
+                    ]"
+                >
+                    {{ card.title }}
+                </h2>
+                <component
+                    v-if="card.icon"
+                    :is="card.icon"
+                    :class="card.iconColor ? card.iconColor : 'text-gray-700'"
+                    class="w-6 h-6"
+                />
+            </div>
+            <p
+                :class="[
+                    card.descriptionColor ? card.descriptionColor : 'text-gray-600',
+                    card.descriptionSize ? card.descriptionSize : 'text-base',
+                    card.descriptionWeight ? card.descriptionWeight : 'font-normal'
+                ]"
+            >
+                {{ card.description }}
+            </p>
+        </div>
     </div>
-  </div>
 </template>
 
 <script setup>
-import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/vue/solid' // Ou qualquer outro ícone que use
+import * as LucideIcons from "lucide-vue-next";
+import { computed } from "vue";
 
 const props = defineProps({
-  data: {
-    type: Array,
-    default: () => [],
-  },
-})
+    cards: Array,
+});
 
-function cardClass(type) {
-  if (type === 'saldo') return 'bg-green-600 text-white'
-  return 'bg-gray-300 text-black'
-}
+// Computed para transformar string do ícone em componente Lucide
+const cardsWithIcons = computed(() => {
+    if (!props.cards) return [];
+    return props.cards.map((card) => ({
+        ...card,
+        icon: card.icon ? LucideIcons[card.icon] : null,
+    }));
+});
 </script>

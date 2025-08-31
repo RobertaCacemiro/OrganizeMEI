@@ -1,16 +1,15 @@
 <template>
-    <form @submit.prevent="submit" class="space-y-4">
-        <!-- Botão de fechar -->
-
-        <div class="flex items-center justify-between w-full mb-4">
-            <!-- Título centralizado (visualmente) -->
-            <h1 class="text-3xl font-bold text-[#3DA700] mx-auto">
-                Cadastro de Cliente
-            </h1>
+    <form
+        @submit.prevent="submit"
+         class="p-4 rounded-xl bg-white w-full max-w-10xl mx-auto"
+    >
+        <!-- Título e botão de fechar -->
+        <div class="relative mb-6 text-center">
+            <h1 class="text-2xl font-bold text-[#3DA700]">CADASTRO CLIENTE</h1>
         </div>
 
         <!-- Dados Pessoais -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
                 <label class="label">CPF/CNPJ</label>
                 <IMaskComponent
@@ -26,17 +25,37 @@
                         },
                     ]"
                     :dispatch="dispatchCpfCnpj"
-                    class="input input-bordered w-full"
-                    placeholder="Digite o CPF ou CNPJ"
+                    class="input input-bordered w-full border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3DA700]"
                     required
                 />
             </div>
             <div>
-                <label class="label">Nome</label>
+                <label class="label">Identificação</label>
                 <input
                     v-model="form.name"
                     type="text"
-                    class="input input-bordered w-full"
+                    class="input input-bordered w-full min-w-[250px] border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3DA700]"
+                    placeholder=""
+                    required
+                />
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
+            <div>
+                <label class="label">Telefone</label>
+                <IMaskComponent
+                    v-model:modelValue="form.phone"
+                    :mask="[
+                        {
+                            mask: '(00) 0000-0000',
+                            lazy: true,
+                        },
+                        {
+                            mask: '(00) 00000-0000',
+                            lazy: true,
+                        },
+                    ]"
+                    class="input input-bordered w-full border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3DA700]"
                     required
                 />
             </div>
@@ -45,15 +64,7 @@
                 <input
                     v-model="form.email"
                     type="email"
-                    class="input input-bordered w-full"
-                />
-            </div>
-            <div>
-                <label class="label">Telefone</label>
-                <input
-                    v-model="form.phone"
-                    type="text"
-                    class="input input-bordered w-full"
+                    class="input input-bordered w-full min-w-[250px]"
                 />
             </div>
         </div>
@@ -131,10 +142,20 @@
             ></textarea>
         </div>
 
-        <!-- Botão de envio -->
-        <div class="flex justify-end pt-4">
-            <button type="submit" class="btn btn-primary">
-                Salvar Cliente
+        <!-- Botões -->
+        <div class="flex gap-4 mt-6">
+            <button
+                type="button"
+                class="btn flex-1 bg-[#FF0017] text-white hover:bg-red-700 rounded-xl"
+                @click="$emit('close')"
+            >
+                CANCELAR
+            </button>
+            <button
+                type="submit"
+                class="btn flex-1 bg-[#3DA700] text-white hover:bg-green-700 rounded-xl"
+            >
+                SALVAR
             </button>
         </div>
     </form>

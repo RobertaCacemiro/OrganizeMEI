@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { watch } from "vue";
 
 const emit = defineEmits(["close"]);
+
 const props = defineProps({
     nomenclature: String,
     form: Object,
@@ -10,8 +11,6 @@ const props = defineProps({
     adicional: Object
 });
 
-
-const modal = ref(null);
 
 function abrirModal() {
     modal.value.showModal();
@@ -22,7 +21,7 @@ function fecharModal() {
     modal.value.close();
 }
 
-
+const modal = ref(null);
 const dataFinal = ref({});
 
 watch(
@@ -33,11 +32,11 @@ watch(
     { immediate: true }
 );
 
-
-// precisa expor a função para o pai acessar
+// expor a função para o pai acessar
 defineExpose({
     abrirModal
 });
+
 </script>
 
 <template>
@@ -58,8 +57,6 @@ defineExpose({
                 </button>
             </form>
             <component :is="form" :data="props.data" :adicional="adicional"  :key="JSON.stringify(dataFinal.value)"  />
-
-            <!-- <component :is="form" :data="dataFinal.value" :isEdit="false" :adicional="adicional" /> -->
         </div>
     </dialog>
 </template>
