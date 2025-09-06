@@ -16,19 +16,7 @@
             </div>
 
             <div class="mt-6">
-                <Table
-                    :columnsName="colunas"
-                    :data="data"
-                    :actions="[
-                        { icon: Pencil, color: '#3B82F6', onClick: editar },
-                        {
-                            icon: Trash2,
-                            color: '#EF4444',
-                            onClick: fAbrirConfirmacao,
-                        },
-                        { icon: Eye, color: '#10B981', onClick: visualizar },
-                    ]"
-                />
+                <Table :columnsName="colunas" :data="data" :actions="actions" />
 
                 <ConfirmAction
                     ref="confirmDelete"
@@ -69,8 +57,6 @@ const props = defineProps({
     },
 });
 
-console.log(props);
-
 const data = ref(props.data);
 const clientes = ref(props.clients);
 const dashboardValues = reactive(props.dashboardValues);
@@ -81,6 +67,11 @@ const colunas = [
     { label: "VENCIMENTO", key: "data_vencimento" },
     { label: "VALOR", key: "valor", type: "money" },
     { label: "DATA DE PAGAMENTO", key: "data_pagamento" },
+];
+
+const actions = [
+    { icon: "Pencil", color: "blue-800", onClick: fEditar },
+    { icon: "Trash2", color: "red-800", onClick: fAbrirConfirmacao },
 ];
 
 const cards = [
@@ -143,4 +134,9 @@ function excluir(id) {
         preserveScroll: true,
     });
 }
+
+function fEditar() {
+    console.log("Teste");
+}
+
 </script>

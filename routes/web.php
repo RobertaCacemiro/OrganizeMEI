@@ -85,16 +85,14 @@ Route::middleware([ 'require.mei'])->group(function () {
 
     Route::get('/clientes', [ClientController::class, 'index'])->name('clientes.index');
     Route::post('/clientes/store', [ClientController::class, 'store']);
-    // Route::post('/profile-mei/{id}/update', [ClientController::class, 'update']);
-    Route::get('/clientes/{id}/edit', [ClientController::class, 'edit']);
-    Route::get('/api/clientes/{id}', [ClientController::class, 'show']);
+    Route::post('/clientes/{id}/update', [ClientController::class, 'update']);
     Route::delete('/clientes/{id}', [ClientController::class, 'destroy']);
 
     Route::get('/financeiro', [TransactionController::class, 'index'])->name('financeiro.index');
     Route::post('/financeiro/store', [TransactionController::class, 'store']);
     Route::get('/financeiro/{id}/edit', [TransactionController::class, 'edit']);
     Route::post('/financeiro/{id}/update', [TransactionController::class, 'update']);
-    Route::delete('/financeiro/exclusao', [TransactionController::class, 'destroy']);
+    Route::delete('/financeiro/{id}', [TransactionController::class, 'destroy']);
 
     Route::get('/cobrancas', [ChargeController::class, 'index'])->name('cobrancas.index');
     Route::post('/cobrancas/store', [ChargeController::class, 'store']);

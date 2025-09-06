@@ -94,9 +94,6 @@ const props = defineProps({
 
 const form = reactive({});
 
-console.log("CAMPOS", props.campos);
-console.log("Valores definidos", props.definedValues);
-
 props.campos.forEach((campo) => {
     form[campo.name] = props.definedValues?.[campo.name] || "";
 });

@@ -124,7 +124,6 @@ if (Array.isArray(categories.value)) {
     }));
 }
 
-
 const colunas = [
     { label: "DATA", key: "date" },
     { label: "DESCRIÇÃO", key: "descricao" },
@@ -179,7 +178,7 @@ function fEditar(id) {
     if (!registro) return;
 
     registroSelecionado.value = id ? { ...registro } : {};
-    registerButtonRef.value.abrirModal();
+    registerButtonRef.value.fAbrirModal();
 }
 
 const confirmDelete = ref(null);
@@ -191,8 +190,7 @@ function fAbrirConfirmacao(id) {
 }
 
 function fExcluir(id) {
-    form.delete(`/financeiro/exclusao`, {
-        data: { ids: selectedItems.value },
+    form.delete(`/financeiro/${id}`, {
         preserveScroll: true,
     });
 }
@@ -203,9 +201,5 @@ function fAplicarFiltro(filtros) {
         preserveScroll: true,
         replace: true,
     });
-}
-
-function visualizar() {
-    console.log("Teste");
 }
 </script>

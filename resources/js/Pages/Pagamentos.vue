@@ -52,8 +52,6 @@ const props = defineProps({
 
 const data = ref(props.data);
 
-console.log("Data", data);
-
 const colunas = [
     { label: "STATUS", key: "status" },
     { label: "CLIENTE", key: "cliente" },

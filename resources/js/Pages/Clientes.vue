@@ -3,8 +3,10 @@
         <div class="px-4">
             <div class="flex justify-end items-center pb-3">
                 <RegisterButton
+                    ref="registerButtonRef"
                     :nomenclature="'CADASTRAR CLIENTE'"
                     :form="FormCliente"
+                    :data="registroSelecionado"
                 />
             </div>
             <div>
@@ -14,6 +16,7 @@
                         {
                             name: 'cpf_cnpj',
                             placeholder: 'CPF/CNPJ:',
+                            type: 'mask',
                             mask: [
                                 { mask: '000.000.000-00' }, // CPF
                                 { mask: '00.000.000/0000-00' }, // CNPJ
@@ -35,9 +38,9 @@
                 <ConfirmAction
                     ref="confirmDelete"
                     title="Exclusão de Registro"
-                    message="Tem certeza que deseja excluir este registro financeiro?"
+                    message="Tem certeza que deseja excluir este cliente?"
                     :id="currentId"
-                    @confirm="excluir"
+                    @confirm="fExcluir"
                 />
             </div>
         </div>
@@ -85,7 +88,6 @@ const colunas = [
     { label: "TELEFONE", key: "phone" },
     { label: "ENDEREÇO", key: "address" },
     { label: "OBSERVAÇÃO", key: "observacao" },
-
 ];
 
 const actions = [
@@ -93,11 +95,21 @@ const actions = [
     { icon: "Trash2", color: "red-800", onClick: fAbrirConfirmacao },
 ];
 
-function fEditar (id) {
-    axios.get(`/api/clientes/${id}`).then((response) => {
-        edicaoForm.value = response.data; // Preenche o formulário
-        modalAberto.value = true; // Abre o modal
-    });
+const form = useForm({
+    name: props.filters?.name || "",
+    cpf_cnpj: props.filters?.cpf_cnpj || "",
+    email: props.filters?.email || "",
+});
+
+let registerButtonRef = ref(null);
+let registroSelecionado = ref({});
+
+function fEditar(id) {
+    const registro = data.value.data.find((item) => item.id === id);
+    if (!registro) return;
+
+    registroSelecionado.value = id ? { ...registro } : {};
+    registerButtonRef.value.fAbrirModal();
 }
 
 const confirmDelete = ref(null);
@@ -108,17 +120,11 @@ function fAbrirConfirmacao(id) {
     confirmDelete.value.openModal();
 }
 
-function excluir(id) {
-    if (confirm("Tem certeza que deseja excluir este cliente?")) {
-        form.delete(`clientes/${id}`);
-    }
+function fExcluir(id) {
+    form.delete(`/clientes/${id}`, {
+        preserveScroll: true,
+    });
 }
-
-const form = useForm({
-    name: props.filters?.name || "",
-    cpf_cnpj: props.filters?.cpf_cnpj || "",
-    email: props.filters?.email || "",
-});
 
 function fAplicarFiltro(filtros) {
     router.get("/clientes", filtros, {

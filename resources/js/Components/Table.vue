@@ -23,8 +23,6 @@ const props = defineProps({
     },
 });
 
-console.log("Data do Table", props.data);
-
 // Armazena os itens selecionados
 const selectedItems = ref([]);
 
@@ -77,13 +75,13 @@ function formatValue(value, type) {
             <thead>
                 <tr>
                     <!-- Checkbox principal -->
-                    <th>
+                    <!-- <th>
                         <input
                             type="checkbox"
                             class="checkbox"
                             v-model="allSelected"
                         />
-                    </th>
+                    </th> -->
                     <th
                         v-for="(column, index) in columnsName"
                         :key="index"
@@ -91,28 +89,28 @@ function formatValue(value, type) {
                     >
                         {{ column.label }}
                     </th>
-                    <th>
+                    <!-- <th> // Exclusão em massa
                         <button
                             class="btn bg-[#FF0017] text-white rounded-lg collapse-arrow"
                             @click="fAbrirConfirmacao(selectedItems)"
                         >
                             EXCLUIR
                         </button>
-                    </th>
+                    </th> -->
                 </tr>
             </thead>
 
             <tbody>
                 <tr v-for="(item, rowIndex) in data.data" :key="rowIndex">
                     <!-- Checkbox individual -->
-                    <td>
+                    <!-- <td>
                         <input
                             type="checkbox"
                             class="checkbox"
                             :checked="selectedItems.includes(item.id)"
                             @change="toggleSelection(item.id)"
                         />
-                    </td>
+                    </td> -->
 
                     <td
                         v-for="(column, colIndex) in columnsName"
