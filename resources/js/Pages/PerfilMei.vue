@@ -153,12 +153,12 @@
                                     placeholder="00000-000"
                                     minlength="9"
                                     maxlength="9"
-                                    @keyup.enter="buscarCep"
+                                    @keyup.enter="fBuscarCEP"
                                 />
                                 <button
                                     type="button"
                                     class="btn btn-primary h-3/3 input-lg self-center bg-[#3DA700] border-[#3DA700] hover:bg-[#3DA700]"
-                                    @click="buscarCep"
+                                    @click="fBuscarCEP"
                                     title="Buscar endereço pelo CEP"
                                 >
                                     <MagnifyingGlassIcon
@@ -279,7 +279,7 @@ import { ref, reactive } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import Sidebar from "@/Components/Sidebar.vue";
 import Toast from "@/Components/Toast.vue"; // ajuste o caminho conforme sua estrutura
-import { fValidaCNPJ } from "@/utils/validators";
+import { fValidaCpfCnpj  } from "@/utils/validators";
 import { useCepService } from "@/utils/cepService"; // Importe o serviço
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/outline"; // Importe o ícone de pesquisa
 
@@ -429,7 +429,7 @@ const handleImageUpload = (event) => {
 
 const { buscarEnderecoPorCep } = useCepService();
 
-const buscarCep = async () => {
+const fBuscarCEP = async () => {
     try {
         if (!form.zip_code || form.zip_code.replace(/\D/g, "").length !== 8) {
             throw new Error("CEP inválido ou incompleto");

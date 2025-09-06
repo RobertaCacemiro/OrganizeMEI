@@ -1,6 +1,7 @@
 <template>
     <form
-        @submit.prevent="submit"
+        method="dialog"
+        @submit.prevent="fSubmit"
         class="p-4 rounded-xl bg-white max-w-lg w-full"
     >
         <!-- Título e botão de fechar -->
@@ -112,7 +113,7 @@
             <button
                 type="button"
                 class="btn flex-1 bg-[#FF0017] text-white hover:bg-red-700 rounded-xl"
-                @click="$emit('close')"
+                @click="fHandleCancel"
             >
                 CANCELAR
             </button>
@@ -145,10 +146,9 @@ const props = defineProps({
 
 const categories = props.adicional;
 
-// Use a ref to store the data locally.
-// We will update this ref when props.data changes.
 const formData = ref({});
 
+// Filtros
 const form = useForm({
     transaction_date: new Date().toISOString().split("T")[0],
     amount: null,
@@ -158,6 +158,13 @@ const form = useForm({
     observation: null,
 });
 
+const emit = defineEmits(["close"]);
+
+function fHandleCancel() {
+    form.reset();
+    emit("close"); // avisa o pai que quer fechar
+}
+
 onMounted(() => {
     form.reset();
 });
@@ -165,7 +172,6 @@ onMounted(() => {
 watch(
     () => props.data,
     (editValue) => {
-        // Here, we update our local formData ref with the new data.
         formData.value = editValue;
 
         if (editValue && Object.keys(editValue).length > 0) {
@@ -185,7 +191,7 @@ watch(
     { immediate: true }
 );
 
-function submit() {
+function fSubmit() {
     if (formData.value.id) {
         form.post(`/financeiro/${formData.value.id}/update`, {
             method: "put",

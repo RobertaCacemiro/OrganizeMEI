@@ -8,16 +8,20 @@ const props = defineProps({
     nomenclature: String,
     form: Object,
     data: Object,
-    adicional: Object
+    adicional: Object,
 });
 
-
-function abrirModal() {
+function fAbrirModal() {
     modal.value.showModal();
 }
 
-function fecharModal() {
-    emit("close");
+function fHandleCancel() {
+    form.reset();
+    emit("close"); // avisa o pai que quer fechar
+}
+
+function fFecharModal() {
+    emit("close"); // se quiser notificar o avô
     modal.value.close();
 }
 
@@ -34,15 +38,14 @@ watch(
 
 // expor a função para o pai acessar
 defineExpose({
-    abrirModal
+    fAbrirModal,
 });
-
 </script>
 
 <template>
     <button
         class="btn bg-[#3DA700] text-white rounded-lg collapse-arrow"
-        @click="abrirModal"
+        @click="fAbrirModal"
     >
         {{ nomenclature }}
     </button>
@@ -56,7 +59,13 @@ defineExpose({
                     ✕
                 </button>
             </form>
-            <component :is="form" :data="props.data" :adicional="adicional"  :key="JSON.stringify(dataFinal.value)"  />
+            <component
+                :is="form"
+                :data="props.data"
+                :adicional="adicional"
+                :key="JSON.stringify(dataFinal.value)"
+                @close="fFecharModal"
+            />
         </div>
     </dialog>
 </template>

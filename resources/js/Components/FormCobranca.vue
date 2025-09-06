@@ -133,10 +133,6 @@ const props = defineProps({
 
 const clients = props.adicional;
 
-console.log("Clientes", clients);
-
-// Use a ref to store the data locally.
-// We will update this ref when props.data changes.
 const formData = ref({});
 
 const form = useForm({
@@ -177,8 +173,6 @@ watch(
 );
 
 function submit() {
-
-    console.log("Formulario", form);
     // if (formData.value.id) {
     //     form.post(`/financeiro/${formData.value.id}/update`, {
     //         method: "put",

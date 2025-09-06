@@ -50,6 +50,7 @@ const positionClass =
         "top-left": "top-5 left-5",
         "bottom-right": "bottom-5 right-5",
         "bottom-left": "bottom-5 left-5",
+        center: "top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2",
     }[props.position] || "top-5 right-5";
 
 const sizeClass =

@@ -50,7 +50,7 @@ class TransactionController extends Controller
         $lancamentos = $query
             ->orderBy('transaction_date', 'desc')
             ->paginate(10)
-            ->withQueryString() 
+            ->withQueryString()
             ->through(function ($lancamento) {
                 return [
                     'id' => $lancamento->id,
@@ -134,7 +134,6 @@ class TransactionController extends Controller
 
     public function edit($id)
     {
-
         $launch = Transaction::findOrFail($id);
 
         return response()->json($launch);
@@ -161,36 +160,24 @@ class TransactionController extends Controller
         return Inertia::location(route('financeiro.index'));
     }
 
-
-    public function destroy(Request $request)
+    public function destroy($id)
     {
-        $ids = $request->ids; // array de IDs
+        $launche = Transaction::findOrFail($id);
 
         $userId = auth()->id();
         $meiId = session('mei_id');
 
-        if (!$ids || !is_array($ids)) {
-            return response()->json(['message' => 'Nenhum registro selecionado'], 400);
+        if ($launche->mei_id !== $meiId) {
+            abort(403, 'Acesso negado: registro não pertence ao seu MEI.');
         }
 
-        // Busca os lançamentos correspondentes aos IDs enviados
-        $launches = Transaction::whereIn('id', $ids)->get();
-
-        // Verifica se o usuário tem permissão para excluir cada lançamento
-        foreach ($launches as $launch) {
-            if ($launch->mei_id !== $meiId) {
-                abort(403, "Acesso negado: lançamento ID {$launch->id} não pertence ao seu MEI.");
-            }
-
-            if ($launch->user_id !== $userId) {
-                abort(403, "Acesso negado: você não cadastrou o lançamento ID {$launch->id}.");
-            }
+        if ($launche->user_id !== $userId) {
+            abort(403, 'Acesso negado: você não cadastrou essa registro.');
         }
 
-        // Se passou em todas as validações, exclui
-        Transaction::whereIn('id', $ids)->delete();
+        $launche->delete();
 
-        return redirect()->back()->with('success', 'Registros excluídos com sucesso.');
+        return Inertia::location(route('financeiro.index'));
     }
 
 }

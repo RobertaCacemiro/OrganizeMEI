@@ -12,7 +12,6 @@ use App\Filters\ClientFilters;
 
 class ClientController extends Controller
 {
-
     public function index(Request $request)
     {
         $meiId = session('mei_id');
@@ -26,12 +25,7 @@ class ClientController extends Controller
         $query = Client::where('mei_id', $meiId);
         $filters = new ClientFilters($request);
 
-        // showArray(["filtros" => $request]);
-
-        // exit;
-
         $query = $filters->apply($query);
-
 
         $clients = $query->orderBy('name', 'asc')
             ->orderBy('created_at', 'asc')
@@ -52,13 +46,16 @@ class ClientController extends Controller
                         $client->state,
                         $client->zip_code,
                     ])->filter()->implode(', '),
+                    "street" => $client->street,
+                    "number" => $client->number,
+                    "complement" => $client->complement,
+                    "district" => $client->district,
+                    "city" => $client->city,
+                    "state" => $client->state,
+                    "zip_code" => $client->zip_code,
                     'observacao' => $client->notes
                 ];
             });
-
-
-        // showArray(["CLIENTES" => $clients]);
-        // exit;
 
         return Inertia::render('Clientes', [
             'data' => $clients,
@@ -66,27 +63,28 @@ class ClientController extends Controller
         ]);
     }
 
-
-
     public function store(Request $request)
     {
-        // showArray(["REQUEST" => $request]);
-        // exit;
-        // echo "TESTE";
-        // exit;
         $validatedData = $request->validate([
             'cpf_cnpj' => 'required|unique:clients,cpf_cnpj',
             'name' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255|unique:clients,email',
+            'email' => 'required|email|max:255|unique:clients,email',
             'phone' => 'nullable|string|max:255',
             'street' => 'nullable|string|max:255',
-            'number' => 'nullable|string|max:255',
+            'number' => 'nullable|int|max:255',
             'complement' => 'nullable|string|max:255',
             'district' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
             'state' => 'nullable|string|max:2',
             'zip_code' => 'nullable|string|max:10',
             'notes' => 'nullable|string',
+        ], [
+            'cpf_cnpj.required' => 'O CPF/CNPJ é obrigatório.',
+            'cpf_cnpj.unique' => 'Esse CPF/CNPJ já está cadastrado.',
+            'name.required' => 'A identificação da pessoa física/juridica é obrigatório.',
+            'email.email' => 'Digite um e-mail válido.',
+            'email.required' => 'O e-mail é obrigatório.',
+            'email.unique' => 'Este e-mail está vinculado a outro usuário.',
         ]);
 
         // Recupera o mei_id da sessão
@@ -115,49 +113,72 @@ class ClientController extends Controller
         ]);
 
         return Inertia::location(route('clientes.index'));
-
-        // return redirect()->back()->with('success', 'Cliente cadastrado com sucesso!');
     }
 
-    public function edit($id)
+    public function update(Request $request, $id)
     {
-        $client = Client::findOrFail($id);
+        $userId = auth()->id();
+        $meiId = session('mei_id');
 
-        return Inertia::render('clientes.index', [
-            'cliente' => $client,
+        // Validação com unique ignorando o registro atual
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255|unique:clients,email,' . $id,
+            'phone' => 'nullable|string|max:255',
+            'street' => 'nullable|string|max:255',
+            'number' => 'nullable|string|max:255',
+            'complement' => 'nullable|string|max:255',
+            'district' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'state' => 'nullable|string|max:2',
+            'zip_code' => 'nullable|string|max:10',
+            'notes' => 'nullable|string',
+        ], [
+            'name.required' => 'A identificação da pessoa física/juridica é obrigatório.',
+            'email.email' => 'Digite um e-mail válido.',
+            'email.required' => 'O e-mail é obrigatório.',
+            'email.unique' => 'E-mail já vinculado a outro cliente.',
         ]);
+
+
+        // Busca e atualiza apenas o cliente específico
+        $client = Client::where('id', $id)
+            ->where('user_id', $userId)
+            ->where('mei_id', $meiId)
+            ->firstOrFail();
+
+        $client->update($validated);
+
+        return Inertia::location(route('clientes.index', $request->all()));
     }
 
-    public function show($id)
-    {
-        $cliente = Client::findOrFail($id);
-        // showArray(['TESTE' => $cliente]);
-        // exit;
-        return response()->json($cliente);
-    }
-
-
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $client = Client::findOrFail($id);
 
         $userId = auth()->id();
         $meiId = session('mei_id');
 
-        // Verifica se o cliente pertence ao MEI do usuário logado
+        // Verificações de segurança
         if ($client->mei_id !== $meiId) {
             abort(403, 'Acesso negado: cliente não pertence ao seu MEI.');
         }
 
-        // Verifica se o cliente foi cadastrado pelo usuário logado
         if ($client->user_id !== $userId) {
             abort(403, 'Acesso negado: você não cadastrou esse cliente.');
         }
 
+        // Verificação de pagamentos associados
+        $hasPayments = \App\Models\Payment::where('client_id', $client->id)->exists();
+
+        if ($hasPayments) {
+            return back()->with('error', 'Não é possível excluir este cliente porque existem pagamentos associados.');
+        }
+
+        // Exclusão
         $client->delete();
 
-        return Inertia::location(route('clientes.index'));
-
+        return Inertia::location(route('clientes.index', $request->all()));
     }
 
 }
