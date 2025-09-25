@@ -42,7 +42,7 @@ class PagamentoEmail extends Mailable
         $qrcodeUrl = asset("storage/qrcodes/qrcode_{$this->cobranca->id}.png");
 
         return $this->subject("Cobrança PIX - {$this->cobranca->descricao}")
-            ->view('emails.cobranca')
+            ->view('emails.payments')
             ->with([
                 'cobranca' => $this->cobranca,
                 'qrcodeUrl' => $qrcodeUrl,

@@ -97,6 +97,7 @@ class PixGenerateCommand extends Command
             $cobranca->cidade = $mei->city;
             $cobranca->cnpj = $mei->cnpj;
             $cobranca->identification = $mei->identification;
+            $cobranca->key = $payment->key;
 
             // Gera payload PIX
             $payload = $this->gerarPayloadPix(
@@ -134,6 +135,7 @@ class PixGenerateCommand extends Command
             // Marca como enviado
             $payment->user_id_sent = 1;
             $payment->sent_at = now();
+            $payment->status = 2;
             $payment->save();
         }
     }

@@ -30,24 +30,18 @@
             margin: 10px 0;
         }
 
-        .card {
-            background: #3DA700;
-            padding: 16px;
-            border-radius: 12px;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .card h2 {
-            color: #fff;
-            margin-bottom: 10px;
-        }
-
-        .qrcode {
-            background: #fff;
-            padding: 10px;
-            border-radius: 8px;
+        .btn {
             display: inline-block;
+            background: #3DA700;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background: #2f7f00;
         }
 
         .footer {
@@ -58,26 +52,42 @@
         }
     </style>
 </head>
--
 
 <body>
     <div class="container">
         <h1>Cobrança PIX</h1>
 
-        <p>Olá {{ $cobranca->cliente_nome ?? 'Cliente' }},</p>
+        <p>Olá, {{$cobranca->cliente_nome ?? 'Cliente' }}, tudo bem?</p>
 
         <p class="info">
-            Segue abaixo a cobrança referente a <strong>{{ $cobranca->descricao }}</strong>.
+            Você recebeu uma cobrança de <strong>{{$cobranca->emitente }}</strong>,
+            <br>Seguem os detalhes:
         </p>
+
+        <ul>
+            <li><strong>Valor:</strong> R$ {{ number_format($cobranca->valor, 2, ',', '.') }}</li>
+            <li><strong><strong>Cidade:</strong> {{ $cobranca->cidade }}</li>
+
+        </ul>
 
         <p class="info"><strong>Valor:</strong> R$ {{ number_format($cobranca->valor, 2, ',', '.') }}</p>
         <p class="info"><strong>Cidade:</strong> {{ $cobranca->cidade }}</p>
 
+        <p>
+            Escaneie o QR Code no PDF em anexo para realizar o pagamento.
+        </p>
+
+        <p>
+            <!-- <a href="http://127.0.0.1:8000/comprovante" class="btn">Enviar Comprovante</a> -->
+            <!-- <a href="{{ url('/comprovante/' . $cobranca->key) }}" class="btn">Enviar Comprovante</a> -->
+            <a href="{{ url('/comprovante/' . $cobranca->key) }}" class="btn">Enviar Comprovante</a>
+
+
+        </p>
+
         <div class="qrcode">
-            <img src="{{ $qrcodeUrl }}" alt="QR Code PIX" style="width:200px;">
+            <img src="{{ $qrcodeCid }}" alt="QR Code PIX" style="width:200px;">
         </div>
-        <p><strong>Código copia e cola:</strong></p>
-        <pre style="font-size:12px; white-space: pre-wrap;">{{ $cobranca->pix_codigo }}</pre>
 
         <div class="footer">
             <p>Este e-mail foi enviado automaticamente pelo sistema OrganizeMEI.</p>
