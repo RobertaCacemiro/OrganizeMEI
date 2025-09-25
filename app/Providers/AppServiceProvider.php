@@ -19,13 +19,19 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    // public function boot(): void
-    // {
-    //     Inertia::share([
-    //         'auth.user.profile_photo' => function () {
-    //             $user = Auth::user();
-    //             return $user?->meiProfile?->profile_photo;
-    //         },
-    //     ]);
-    // }
+    public function boot(): void
+    {
+        Inertia::share([
+            'auth' => function () {
+                $user = auth()->user();
+                return [
+                    'id' => session('id'),
+                    'type' => session('type'),
+                    'access' => session('access'),
+                    'mei_id' => session('mei_id'),
+                    'user' => $user,
+                ];
+            }
+        ]);
+    }
 }

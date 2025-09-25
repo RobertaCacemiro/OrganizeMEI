@@ -10,18 +10,14 @@
                 />
             </div> -->
             <div class="mt-6">
-                <Table
-                    :columnsName="colunas"
-                    :data="data"
-                    :actions="actions"
-                />
+                <Table :columnsName="colunas" :data="data" :actions="actions" />
 
                 <ConfirmAction
                     ref="confirmDelete"
                     title="Exclusão de Registro"
-                    message="Tem certeza que deseja excluir este registro de cobrança?"
+                    message="Tem certeza que deseja excluir este registro de pagamento?"
                     :id="currentId"
-                    @confirm="excluir"
+                    @confirm="fExcluir"
                 />
             </div>
         </div>
@@ -54,16 +50,16 @@ const data = ref(props.data);
 
 const colunas = [
     { label: "STATUS", key: "status" },
-    { label: "CLIENTE", key: "cliente" },
+    { label: "CLIENTE", key: "cliente_name" },
     { label: "VENCIMENTO", key: "data_vencimento" },
     { label: "VALOR", key: "valor", type: "money" },
     { label: "DATA DE PAGAMENTO", key: "dataPagamento" },
     { label: "DATA DE ENVIO", key: "data_envio" },
-    { label: "ANEXOS", key: "dataPagamento" }
+    { label: "ANEXOS", key: "dataPagamento" },
 ];
 
 const actions = [
-    { icon: "Pencil", color: "blue-800", onClick: fEditar },
+    { icon: "MailOpen", color: "blue-800", onClick: fVisualizarEmailPIX },
     { icon: "Trash2", color: "red-800", onClick: fAbrirConfirmacao },
 ];
 
@@ -84,11 +80,14 @@ function fAbrirConfirmacao(id) {
     confirmDelete.value.openModal();
 }
 
-function excluir(id) {
-
+function fExcluir(id) {
     fAbrirConfirmacao(id);
     form.delete(`/boletos/${id}`, {
         preserveScroll: true,
     });
+}
+
+function fVisualizarEmailPIX() {
+    console.log("Teste");
 }
 </script>

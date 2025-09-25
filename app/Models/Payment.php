@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Support\Str;
+
 class Payment extends Model
 {
     use HasFactory;
@@ -20,7 +22,17 @@ class Payment extends Model
         'payment_date',
         'sent',
         'resent_by',
+        'key'
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($payment) {
+            if (empty($payment->key)) {
+                $payment->key = Str::uuid();
+            }
+        });
+    }
 
     public function user()
     {

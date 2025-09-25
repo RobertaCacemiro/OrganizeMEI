@@ -91,8 +91,8 @@ const colunas = [
 ];
 
 const actions = [
-    { icon: "Pencil", color: "blue-800", onClick: fEditar },
-    { icon: "Trash2", color: "red-800", onClick: fAbrirConfirmacao },
+    { icon: "Pencil", color: "blue-800", label: "Editar registro", onClick: fEditar },
+    { icon: "Trash2", color: "red-800", label: "Excluir registro", onClick: fAbrirConfirmacao },
 ];
 
 const form = useForm({

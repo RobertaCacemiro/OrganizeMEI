@@ -71,7 +71,8 @@ function formatValue(value, type) {
     <div
         class="w-full overflow-x-auto rounded-box border border-base-content/5 bg-base-100"
     >
-        <table class="table table-zebra min-w-[600px] md:min-w-[800px]">
+        <!-- <table class="table table-zebra min-w-[600px] md:min-w-[800px]"> -->
+        <table class="table table-zebra w-full">
             <thead>
                 <tr>
                     <!-- Checkbox principal -->
@@ -120,19 +121,22 @@ function formatValue(value, type) {
                     </td>
 
                     <td class="flex gap-2">
-                        <button
-                            v-for="(action, aIndex) in actionsWithIcons"
-                            :key="aIndex"
-                            @click="action.onClick?.(item.id)"
-                            class="text-[#000000]"
-                            :class="`hover:text-${action.color}`"
-                        >
-                            <component
-                                v-if="action.icon"
-                                :is="action.icon"
-                                class="w-5 h-5"
-                            />
-                        </button>
+                        <template v-if="item.id !== null">
+                            <button
+                                v-for="(action, aIndex) in actionsWithIcons"
+                                :key="aIndex"
+                                @click="action.onClick?.(item.id)"
+                                class="text-[#000000]"
+                                :class="`hover:text-${action.color}`"
+                                :title="action.label"
+                            >
+                                <component
+                                    v-if="action.icon"
+                                    :is="action.icon"
+                                    class="w-5 h-5"
+                                />
+                            </button>
+                        </template>
                     </td>
                 </tr>
             </tbody>

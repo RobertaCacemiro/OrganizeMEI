@@ -16,6 +16,7 @@ class Charge extends Model
         'description',
         'due_date',
         'payment_date',
+        'ies_send_pix',
         'status',
     ];
 

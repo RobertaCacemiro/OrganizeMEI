@@ -4,7 +4,7 @@
             <div class="flex justify-end items-center pb-3">
                 <RegisterButton
                     ref="registerButtonRef"
-                    :nomenclature="'NOVO LANÇAMENTO'"
+                    :nomenclature="'NOVO REGISTRO'"
                     :form="FormFinanceiro"
                     :data="registroSelecionado"
                     :adicional="categories"
@@ -130,11 +130,12 @@ const colunas = [
     { label: "CATEGORIA", key: "category" },
     { label: "VALOR", key: "valor", type: "money" },
     { label: "TIPO", key: "tipo" },
+    { label: "OBSERVAÇÃO", key: "observation" },
 ];
 
 const actions = [
-    { icon: "Pencil", color: "blue-800", onClick: fEditar },
-    { icon: "Trash2", color: "red-800", onClick: fAbrirConfirmacao },
+    { icon: "Pencil", color: "blue-800", label: "Editar registro", onClick: fEditar },
+    { icon: "Trash2", color: "red-800", label: "Excluir registro", onClick: fAbrirConfirmacao },
 ];
 
 const cards = [

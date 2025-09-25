@@ -37,4 +37,15 @@ class MeiProfile extends Model
     {
         return $this->hasMany(Client::class, 'mei_id');
     }
+
+    public function pixKeys()
+    {
+        return $this->hasMany(\App\Models\MeiPixKey::class, 'mei_profile_id');
+    }
+
+    public function activePixKey()
+    {
+        return $this->hasOne(\App\Models\MeiPixKey::class, 'mei_profile_id')
+            ->where('is_active', 1);
+    }
 }

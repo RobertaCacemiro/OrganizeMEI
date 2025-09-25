@@ -31,7 +31,7 @@
                         v-bind="isEditing ? { readonly: true } : {}"
                         class="input input-bordered w-full border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3DA700]"
                         placeholder="00.000.000/0000-00"
-                        @blur="fValidarCpfCnpj"
+                        @blur="() => { if (!isEditing) fValidarCpfCnpj() }"
                         required
                     />
 
@@ -305,6 +305,7 @@ const props = defineProps({
     data: Object,
     adicional: Object,
 });
+
 const emit = defineEmits(["close"]);
 
 const formData = ref(props.data || {});

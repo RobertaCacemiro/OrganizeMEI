@@ -1,6 +1,7 @@
 <script setup>
-import { ref, reactive } from "vue"; // Reatividade
-import { router } from "@inertiajs/vue3";
+import { ref, reactive, watch } from "vue"; // Reatividade
+import { router, usePage} from "@inertiajs/vue3";
+import Toast from "@/Components/Toast.vue";
 
 // Icones
 import { Mail } from "lucide-vue-next";
@@ -16,6 +17,28 @@ const form = reactive({
     email: null,
     password: null,
 });
+
+const toastMessage = ref("");
+const toastType = ref("info");
+const showToast = ref(false);
+
+const page = usePage();
+// Watch para mostrar erros vindos do backend
+watch(
+    () => page.props.errors,
+    (errors) => {
+        if (errors && Object.keys(errors).length > 0) {
+            toastMessage.value = Object.values(errors)[0];
+            toastType.value = "error";
+            showToast.value = true;
+
+            setTimeout(() => {
+                showToast.value = false;
+            }, 3000);
+        }
+    },
+    { deep: true }
+);
 
 /**
  * Função que valida se as senhas informadas coincidem
@@ -147,6 +170,13 @@ function login() {
                     </button>
                 </div>
             </form>
+            <Toast
+                v-if="showToast"
+                :message="toastMessage"
+                :type="toastType"
+                position="center"
+                size="lg"
+            />
         </div>
     </div>
 </template>

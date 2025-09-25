@@ -44,8 +44,8 @@ class PaymentController extends Controller
             ->through(function ($payments) use ($statusMap) {
                 return [
                     'id' => $payments->id,
-                    'client_id' => $payments->client_id,
-                    'client_name' => $payments->client ? $payments->client->name : null,
+                    'cliente_id' => $payments->client_id,
+                    'cliente_name' => $payments->client ? $payments->client->name : null,
                     'data_vencimento' => $payments->due_date ? Carbon::parse($payments->due_date)->format('d/m/Y') : null,
                     'data_pagamento' => $payments->sent_at ? Carbon::parse($payments->sent_at)->format('d/m/Y') : null,
                     'data_envio' => $payments->sent_at ? Carbon::parse($payments->sent_at)->format('d/m/Y') : null,
@@ -55,15 +55,39 @@ class PaymentController extends Controller
                 ];
             });
 
-        
-
-
-        // showArray(["pagametnos" => $payments]);
-        // exit;
-
         return Inertia::render('Pagamentos', [
             'data' => $payments
         ]);
+    }
+
+    public function getDashboardValues()
+    {
+        $userId = auth()->id();
+        $meiId = session('mei_id');
+
+        $query = Payment::where('user_id', $userId)
+            ->where('mei_id', $meiId);
+
+        // Total em dinheiro
+        $totalPendentes = (clone $query)->where('status', 1)->sum('amount');
+        $totalPagos = (clone $query)->where('status', 2)->sum('amount');
+        $totalAtrasados = (clone $query)->where('status', 3)->sum('amount');
+
+        // Quantidade de registros
+        $countPendentes = (clone $query)->where('status', 1)->count();
+        $countPagos = (clone $query)->where('status', 2)->count();
+        $countAtrasados = (clone $query)->where('status', 3)->count();
+
+        // Calcular total em dinheiro
+        $totalCobrancas = ($countPendentes + $countPagos + $countAtrasados);
+
+
+        return [
+            'total_cobrancas' => $totalCobrancas,
+            'total_pagos' => $countPagos,
+            'total_pendentes' => $countPendentes,
+            'total_atrasados' => $countAtrasados,
+        ];
     }
 
     public function store(Request $request)
