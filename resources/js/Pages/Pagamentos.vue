@@ -49,13 +49,14 @@ const props = defineProps({
 const data = ref(props.data);
 
 const colunas = [
+    { label: "CÓDIGO", key: "id" },
+    { label: "Nº COBRANÇA", key: "charge_id" },
     { label: "STATUS", key: "status" },
     { label: "CLIENTE", key: "cliente_name" },
     { label: "VENCIMENTO", key: "data_vencimento" },
     { label: "VALOR", key: "valor", type: "money" },
-    { label: "DATA DE PAGAMENTO", key: "dataPagamento" },
+    { label: "DATA DE PAGAMENTO", key: "data_pagamento" },
     { label: "DATA DE ENVIO", key: "data_envio" },
-    { label: "ANEXOS", key: "dataPagamento" },
 ];
 
 const actions = [

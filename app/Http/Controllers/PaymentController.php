@@ -44,10 +44,11 @@ class PaymentController extends Controller
             ->through(function ($payments) use ($statusMap) {
                 return [
                     'id' => $payments->id,
+                    'charge_id' => $payments->charge_id,
                     'cliente_id' => $payments->client_id,
                     'cliente_name' => $payments->client ? $payments->client->name : null,
                     'data_vencimento' => $payments->due_date ? Carbon::parse($payments->due_date)->format('d/m/Y') : null,
-                    'data_pagamento' => $payments->sent_at ? Carbon::parse($payments->sent_at)->format('d/m/Y') : null,
+                    'data_pagamento' => $payments->return_at ? Carbon::parse($payments->return_at)->format('d/m/Y') : null,
                     'data_envio' => $payments->sent_at ? Carbon::parse($payments->sent_at)->format('d/m/Y') : null,
                     'valor' => $payments->amount,
                     'status_codigo' => $payments->status,

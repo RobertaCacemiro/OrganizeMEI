@@ -53,11 +53,11 @@ defineExpose({
     <dialog ref="modal" class="modal">
         <div class="modal-box">
             <form method="dialog">
-                <button
+                <!-- <button
                     class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
                 >
                     ✕
-                </button>
+                </button> -->
             </form>
             <component
                 :is="form"
