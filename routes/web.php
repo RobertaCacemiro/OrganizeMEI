@@ -20,26 +20,19 @@ use App\Http\Controllers\{
 // Rotas para acessar o sistema
 Route::get('/register', function () {
     return Inertia::render('Register');
-});
-
-Route::get('/login', function () {
-    return Inertia::render('Login');
-});
+})->name('register');
 
 Route::get('/login', function () {
     return Inertia::render('Login');
 })->name('login');
 
-Route::get('/comprovante/{key}', [ProofController::class, 'show'])
-    ->name('comprovante.show');
+Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
+Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 
-// Route::get('/comprovante/{key}', [ProofController::class, 'show'])->name('comprovante.show');
-// Route::post('/comprovante/{key}', [ProofController::class, 'store'])->name('comprovante.store');
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout'); // Já nomeada
 
-// Rotas post cadastro banco
-Route::post('/register', [RegisterController::class, 'store']);
-
-Route::post('/login', [LoginController::class, 'login']);
+Route::get('/comprovante/{key}', [ProofController::class, 'show'])->name('comprovante.show');
+Route::post('/comprovante/{key}', [ProofController::class, 'upload'])->name('comprovante.upload');
 
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 

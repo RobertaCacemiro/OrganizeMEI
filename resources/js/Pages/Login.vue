@@ -1,11 +1,10 @@
 <script setup>
 import { ref, reactive, watch } from "vue"; // Reatividade
-import { router, usePage} from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
 import Toast from "@/Components/Toast.vue";
 
 // Icones
-import { Mail } from "lucide-vue-next";
-import { KeyRound } from "lucide-vue-next";
+import { Mail, KeyRound, Eye, EyeOff } from "lucide-vue-next";
 
 // Mask
 import { IMaskComponent } from "vue-imask";
@@ -18,11 +17,18 @@ const form = reactive({
     password: null,
 });
 
+const showPassword = ref(false);
+
+const togglePassword = () => {
+    showPassword.value = !showPassword.value;
+};
+
 const toastMessage = ref("");
 const toastType = ref("info");
 const showToast = ref(false);
 
 const page = usePage();
+
 // Watch para mostrar erros vindos do backend
 watch(
     () => page.props.errors,
@@ -115,7 +121,7 @@ function login() {
                 <div class="space-y-2">
                     <span class="text-gray-500 text-sm">E-mail</span>
                     <label
-                        class="input validator w-full flex items-center gap-2"
+                        class="w-full flex items-center gap-2 border border-gray-300 px-3 py-2 rounded-md focus-within:ring-2 focus-within:ring-[#3DA700] focus-within:border-[#3DA700]"
                     >
                         <Mail class="h-[1em] opacity-50" />
                         <input
@@ -123,6 +129,7 @@ function login() {
                             type="email"
                             placeholder="email@exemplo.com.br"
                             required
+                            class="flex-1 bg-transparent border-0 outline-none p-0"
                         />
                     </label>
                     <div class="validator-hint hidden">
@@ -132,24 +139,35 @@ function login() {
 
                 <div class="space-y-2">
                     <span class="text-gray-500 text-sm">Senha</span>
-                    <label class="input validator w-full flex items-center">
+                    <label
+                        class="w-full flex items-center gap-2 border border-gray-300 px-3 py-2 rounded-md focus-within:ring-2 focus-within:ring-[#3DA700] focus-within:border-[#3DA700]"
+                    >
                         <KeyRound class="h-[1em] opacity-50" />
+
                         <input
                             v-model="form.password"
-                            class="w-full"
-                            type="password"
+                            :type="showPassword ? 'text' : 'password'"
                             placeholder="Password"
                             minlength="8"
                             title="Deve ter mais de 8 caracteres, incluindo número, letra minúscula e letra maiúscula"
                             required
+                            class="flex-1 bg-transparent border-0 outline-none p-0"
                         />
+
+                        <!-- Ícone de olho -->
+                        <button
+                            type="button"
+                            @click="togglePassword"
+                            class="ml-2 text-gray-500 hover:text-gray-700"
+                        >
+                            <component
+                                :is="showPassword ? EyeOff : Eye"
+                                class="h-5 w-5"
+                            />
+                        </button>
                     </label>
-                    <!-- <p class="validator-hint hidden">
-                        Deve ter mais de 8 caracteres, incluindo
-                            <br />Pelo menos um número   <br />
-                        Pelo menos uma letra minúscula <br />Pelo menos uma letra maiúscula
-                    </p> -->
                 </div>
+
                 <div class="text-right italic">
                     <p class="text-gray-500">
                         <a
