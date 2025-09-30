@@ -18,6 +18,13 @@ class RegisterController extends Controller
             'phone' => 'required|string|max:20',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8',
+        ], [
+            'name.required' => 'A identificação do usuário é obrigatório.',
+            'email.email' => 'Digite um e-mail válido.',
+            'email.required' => 'O e-mail é obrigatório.',
+            'email.unique' => 'Este e-mail já está cadastrado no sistema.',
+            'phone.unique' => 'Este telefone já está cadastrado no sistema.',
+
         ]);
 
         if ($validator->fails()) {
@@ -26,6 +33,7 @@ class RegisterController extends Controller
 
         /* Salva os dados no banco */
         $user = User::create([
+            'access_permission' => 3,
             'name' => $request->name,
             'phone' => $request->phone,
             'email' => $request->email,

@@ -47,38 +47,10 @@ watch(
 );
 
 /**
- * Função que valida se as senhas informadas coincidem
- */
-const validarSenha = () => {
-    erroSenha.value = "";
-
-    const senhaValida = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(
-        form.password
-    );
-
-    if (!senhaValida) {
-        erroSenha.value =
-            "A senha deve ter mais de 8 caracteres, incluindo número, letra minúscula e letra maiúscula";
-        return false;
-    }
-
-    if (form.password !== confirmarSenha._value) {
-        erroSenha.value = "As senhas não coincidem.";
-        return false;
-    }
-
-    return true;
-};
-
-/**
  * Função que realiza o chamdado da função de cadastro do usuário na base de dados
  */
 function login() {
-    const iesSenhaValida = true;
-
-    if (iesSenhaValida) {
-        router.post("/login", form);
-    }
+    router.post("/login", form);
 }
 </script>
 

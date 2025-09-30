@@ -1,18 +1,16 @@
 <script setup>
-import { ref, reactive } from "vue"; // Reatividade
-import { router } from "@inertiajs/vue3";
-
-// Icones
-import { User } from "lucide-vue-next";
-import { Mail } from "lucide-vue-next";
-import { Smartphone } from "lucide-vue-next";
-import { KeyRound } from "lucide-vue-next";
-
-// Mask
+import { ref, reactive, watch } from "vue";
+import { router, usePage } from "@inertiajs/vue3";
+import { User, Mail, Smartphone, KeyRound, Eye, EyeOff } from "lucide-vue-next";
 import { IMaskComponent } from "vue-imask";
+import Toast from "@/Components/Toast.vue";
 
 const confirmarSenha = ref("");
-const erroSenha = ref("");
+const showPassword = ref(false);
+
+function fMostraSenha() {
+    showPassword.value = !showPassword.value;
+}
 
 const form = reactive({
     name: null,
@@ -21,40 +19,67 @@ const form = reactive({
     password: null,
 });
 
-/**
- * Função que valida se as senhas informadas coincidem
- */
-const validarSenha = () => {
-    erroSenha.value = "";
+const showToast = ref(false);
+const toastMessage = ref("");
+const toastType = ref("error");
 
-    const senhaValida = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(
-        form.password
-    );
+function fMensagemErro(message, type = "error") {
+    toastMessage.value = message;
+    toastType.value = type;
+    showToast.value = true;
+}
+
+function fValidaSenha() {
+    const senha = form.password ?? "";
+    const senhaValida = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(senha);
 
     if (!senhaValida) {
-        erroSenha.value =
-            "A senha deve ter mais de 8 caracteres, incluindo número, letra minúscula e letra maiúscula";
+        fMensagemErro(
+            "A senha deve ter mais de 8 caracteres, incluindo número, letra minúscula e letra maiúscula",
+            "error"
+        );
         return false;
     }
 
-    if (form.password !== confirmarSenha._value) {
-        erroSenha.value = "As senhas não coincidem.";
+    if (senha !== confirmarSenha.value) {
+        fMensagemErro("As senhas não coincidem.", "error");
         return false;
     }
 
     return true;
-};
-
-/**
- * Função que realiza o chamdado da função de cadastro do usuário na base de dados
- */
-function register() {
-    const iesSenhaValida = true;
-
-    if (iesSenhaValida) {
-        router.post("/register", form);
-    }
 }
+
+function register() {
+    if (!fValidaSenha()) return;
+
+    router.post("/register", form);
+}
+
+// feedback imediato ao alterar senha
+watch([() => form.password, () => confirmarSenha.value], () => {
+    if (showToast.value) {
+        fValidaSenha();
+    }
+});
+
+const page = usePage();
+
+// Watch para mostrar erros vindos do backend
+watch(
+    () => page.props.errors,
+    (errors) => {
+        if (errors && Object.keys(errors).length > 0) {
+            toastMessage.value = Object.values(errors)[0];
+            toastType.value = "error";
+            showToast.value = true;
+
+            setTimeout(() => {
+                showToast.value = false;
+            }, 3000);
+        }
+    },
+    { deep: true }
+);
 </script>
 
 <template>
@@ -154,55 +179,67 @@ function register() {
                     <!-- <p class="validator-hint">Deve ter 10 dígitos</p> -->
                 </div>
 
-                <div class="grid grid-cols-2 content-start gap-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Campo Senha -->
                     <div class="space-y-1">
                         <span class="text-gray-500 text-sm">Senha</span>
                         <label
-                            class="input validator w-fit flex items-center gap-2"
+                            class="input validator w-full flex items-center gap-2"
                         >
                             <KeyRound class="h-[1em] opacity-50" />
                             <input
                                 v-model="form.password"
-                                class="w-1/2"
-                                type="password"
+                                class="w-full"
+                                :type="showPassword ? 'text' : 'password'"
                                 placeholder="Password"
                                 minlength="8"
                                 pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
                                 title="Deve ter mais de 8 caracteres, incluindo número, letra minúscula e letra maiúscula"
                                 required
                             />
+                            <button
+                                type="button"
+                                @click="fMostraSenha"
+                                class="ml-2 text-gray-500 hover:text-gray-700"
+                            >
+                                <component
+                                    :is="showPassword ? EyeOff : Eye"
+                                    class="h-5 w-5"
+                                />
+                            </button>
                         </label>
-                        <!-- <p class="validator-hint hidden">
-                        Deve ter mais de 8 caracteres, incluindo
-                            <br />Pelo menos um número   <br />
-                        Pelo menos uma letra minúscula <br />Pelo menos uma letra maiúscula
-                    </p> -->
                     </div>
 
+                    <!-- Campo Confirmar Senha -->
                     <div class="space-y-1">
                         <span class="text-gray-500 text-sm"
                             >Confirmar Senha</span
                         >
                         <label
-                            class="input validator w-fit flex items-center gap-2"
+                            class="input validator w-full flex items-center gap-2"
                         >
                             <KeyRound class="h-[1em] opacity-50" />
                             <input
                                 v-model="confirmarSenha"
-                                class="w-1/2"
-                                type="password"
+                                class="w-full"
+                                :type="showPassword ? 'text' : 'password'"
                                 placeholder="Password"
                                 minlength="8"
                                 pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
                                 title="Deve ter mais de 8 caracteres, incluindo número, letra minúscula e letra maiúscula"
                                 required
                             />
+                            <button
+                                type="button"
+                                @click="fMostraSenha"
+                                class="ml-2 text-gray-500 hover:text-gray-700"
+                            >
+                                <component
+                                    :is="showPassword ? EyeOff : Eye"
+                                    class="h-5 w-5"
+                                />
+                            </button>
                         </label>
-                    </div>
-                    <div>
-                        <p v-if="erroSenha" class="text-red-300 text-sm mt-1">
-                            {{ erroSenha }}
-                        </p>
                     </div>
                 </div>
 
@@ -215,6 +252,13 @@ function register() {
                     </button>
                 </div>
             </form>
+            <Toast
+                v-if="showToast"
+                :message="toastMessage"
+                :type="toastType"
+                position="center"
+                size="lg"
+            />
         </div>
     </div>
 </template>
