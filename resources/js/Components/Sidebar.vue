@@ -150,7 +150,7 @@ function flogout() {
                 ></div>
 
                 <!-- Menu lateral mobile -->
-                <div class="bg-[#3DA700] text-white w-64 p-4 z-50">
+                <div class="bg-[#3DA700] text-white w-64 p-4 z-50 flex flex-col justify-between h-full">
                     <div class="flex justify-between items-center mb-4">
                         <a href="/">
                             <img src="/resources/img/logo.png" alt="Logo" />

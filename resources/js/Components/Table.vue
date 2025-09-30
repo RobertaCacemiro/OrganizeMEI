@@ -68,60 +68,43 @@ function formatValue(value, type) {
 </script>
 
 <template>
-    <div
-        class="w-full overflow-x-auto rounded-box border border-base-content/5 bg-base-100"
-    >
-        <!-- <table class="table table-zebra min-w-[600px] md:min-w-[800px]"> -->
-        <table class="table table-zebra w-full">
-            <thead>
-                <tr>
-                    <!-- Checkbox principal -->
-                    <!-- <th>
-                        <input
-                            type="checkbox"
-                            class="checkbox"
-                            v-model="allSelected"
-                        />
-                    </th> -->
-                    <th
-                        v-for="(column, index) in columnsName"
-                        :key="index"
-                        class="text-[#000000]"
-                    >
-                        {{ column.label }}
-                    </th>
-                    <!-- <th> // Exclusão em massa
-                        <button
-                            class="btn bg-[#FF0017] text-white rounded-lg collapse-arrow"
-                            @click="fAbrirConfirmacao(selectedItems)"
+    <div class="w-full">
+        <div
+            class="hidden md:block overflow-x-auto rounded-box border border-base-content/5 bg-base-100"
+        >
+            <table class="table table-zebra w-full">
+                <thead>
+                    <tr>
+                        <th
+                            v-for="(column, index) in columnsName"
+                            :key="index"
+                            class="text-[#000000]"
                         >
-                            EXCLUIR
-                        </button>
-                    </th> -->
-                </tr>
-            </thead>
+                            {{ column.label }}
+                        </th>
+                        <th>AÇÕES</th>
+                    </tr>
+                </thead>
 
-            <tbody>
-                <tr v-for="(item, rowIndex) in data.data" :key="rowIndex">
-                    <!-- Checkbox individual -->
-                    <!-- <td>
-                        <input
-                            type="checkbox"
-                            class="checkbox"
-                            :checked="selectedItems.includes(item.id)"
-                            @change="toggleSelection(item.id)"
-                        />
-                    </td> -->
+                <tbody>
+                    <tr v-for="(item, rowIndex) in data.data" :key="rowIndex">
+                        <!-- Checkbox individual -->
+                        <!-- <td>
+                            <input
+                                type="checkbox"
+                                class="checkbox"
+                                :checked="selectedItems.includes(item.id)"
+                                @change="toggleSelection(item.id)"
+                            />
+                        </td> -->
 
-                    <td
-                        v-for="(column, colIndex) in columnsName"
-                        :key="colIndex"
-                    >
-                        {{ formatValue(item[column.key], column.type) }}
-                    </td>
-
-                    <td class="flex gap-2">
-                        <template v-if="item.id !== null">
+                        <td
+                            v-for="(column, colIndex) in columnsName"
+                            :key="colIndex"
+                        >
+                            {{ formatValue(item[column.key], column.type) }}
+                        </td>
+                        <td class="flex gap-2">
                             <button
                                 v-for="(action, aIndex) in actionsWithIcons"
                                 :key="aIndex"
@@ -136,11 +119,52 @@ function formatValue(value, type) {
                                     class="w-5 h-5"
                                 />
                             </button>
-                        </template>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Cards para telas pequenas -->
+        <div class="grid gap-4 md:hidden">
+            <div
+                v-for="(item, rowIndex) in data.data"
+                :key="rowIndex"
+                class="rounded-lg border border-base-300 bg-base-100 p-4 shadow-sm"
+            >
+                <div
+                    v-for="(column, colIndex) in columnsName"
+                    :key="colIndex"
+                    class="flex text-sm mb-1 items-center"
+                >
+                    <span class="font-semibold text-gray-700 min-w-[100px]">
+                        {{ column.label }}:
+                    </span>
+
+                    <span class="flex-1 break-words">
+                        {{ formatValue(item[column.key], column.type) }}
+                    </span>
+                </div>
+
+                <!-- Ações -->
+                <div class="flex gap-3 mt-10 justify-end">
+                    <button
+                        v-for="(action, aIndex) in actionsWithIcons"
+                        :key="aIndex"
+                        @click="action.onClick?.(item.id)"
+                        class="text-[#000000]"
+                        :class="`hover:text-${action.color}`"
+                        :title="action.label"
+                    >
+                        <component
+                            v-if="action.icon"
+                            :is="action.icon"
+                            class="w-5 h-5"
+                        />
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Paginação -->
