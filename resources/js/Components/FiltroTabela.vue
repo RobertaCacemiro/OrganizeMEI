@@ -56,7 +56,7 @@
         </template>
 
         <!-- Botão submit -->
-        <div class="w-full md:w-auto flex gap-2">
+        <div class="w-full md:w-auto flex flex-col md:flex-row gap-2">
             <button
                 type="submit"
                 class="btn bg-[#3DA700] text-white min-w-[120px] w-full md:w-auto rounded-lg collapse-arrow"
