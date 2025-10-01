@@ -5,5 +5,3 @@ function showArray($array) {
     print_r($array);
     echo '</pre>';
 }
-
-?>

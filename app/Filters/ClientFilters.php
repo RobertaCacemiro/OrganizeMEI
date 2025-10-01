@@ -43,11 +43,3 @@ class ClientFilters
         $this->builder->where('email', 'like', "%$value%");
     }
 }
-
-
-
-
-
-
-
-?>

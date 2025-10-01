@@ -27,13 +27,6 @@ class CategoriesController extends Controller
                 'name' => $validated['name'],
             ]);
 
-
-            // showArray(["cateogiras" => $categories]);exit;
-
-            // Retorna para a página atual com mensagem de sucesso
-            // return redirect()->back()->with('success', 'Categoria criada!')
-            //                  ->with('newCategory', $categories);
-
             return response()->json([
         'success' => true,
         'newCategory' => $categories
@@ -42,9 +35,5 @@ class CategoriesController extends Controller
             // Retorna para a página atual com mensagem de erro
             return redirect()->back()->with('error', 'Erro ao criar categoria: ' . $e->getMessage());
         }
-
-        // return Inertia::location(route('clientes.index', $request->all()));
-
-
     }
 }
