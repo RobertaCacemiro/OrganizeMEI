@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PixGenerateCommand extends Command
@@ -121,6 +122,9 @@ class PixGenerateCommand extends Command
 
                 $cobranca->pix_codigo = $payload;
 
+                //Debug
+                Log::info("Tentando enviar e-mail para {$cobranca->cliente_email}"); antes do Mail::to(...);
+                    
                 // Envia e-mail
                 Mail::to($cobranca->cliente_email)
                     ->send(new PagamentoEmail($cobranca));
