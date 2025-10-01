@@ -123,8 +123,8 @@ class PixGenerateCommand extends Command
                 $cobranca->pix_codigo = $payload;
 
                 //Debug
-                Log::info("Tentando enviar e-mail para {$cobranca->cliente_email}"); antes do Mail::to(...);
-                    
+                Log::info("Tentando enviar e-mail para {$cobranca->cliente_email}");
+ 
                 // Envia e-mail
                 Mail::to($cobranca->cliente_email)
                     ->send(new PagamentoEmail($cobranca));
