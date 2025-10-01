@@ -140,12 +140,17 @@
                         </p>
                         <div class="flex justify-center gap-4 mt-4">
                             <button
+                                type="button"
                                 class="btn bg-purple-600 hover:bg-purple-700 text-white px-4 py-2"
                                 @click="fRedirecionaAssinatura"
                             >
                                 Torne-se Premium
                             </button>
-                            <button class="btn" @click="fFechaModalAssinatura">
+                            <button
+                                type="button"
+                                class="btn"
+                                @click="fFechaModalAssinatura"
+                            >
                                 Não, obrigada.
                             </button>
                         </div>
@@ -270,7 +275,9 @@ watch(
 
         if (editValue && Object.keys(editValue).length > 0) {
             form.client_id = editValue.client_id;
-            form.amount_display = Number(editValue.valor).toFixed(2).replace('.', ',');
+            form.amount_display = Number(editValue.valor)
+                .toFixed(2)
+                .replace(".", ",");
             form.due_date = fFormatDate(editValue.data_vencimento);
             form.payment_date = fFormatDate(editValue.data_pagamento);
             form.ies_send_pix = Number(editValue.ies_envia_pix);
@@ -286,6 +293,7 @@ watch(
 );
 
 function fFechaModalAssinatura() {
+    form.ies_send_pix = 0;
     premiumModal.value.close();
 }
 
