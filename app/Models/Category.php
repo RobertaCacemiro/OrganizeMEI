@@ -34,5 +34,3 @@ class Category extends Model
         return $this->hasMany(Charge::class);
     }
 }
-
-?>

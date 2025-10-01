@@ -45,5 +45,3 @@ class RegisterController extends Controller
         return ($user) ? redirect()->route('perfil.empresa') : back()->with('error', 'Erro ao cadastrar o usuário. Tente novamente.');
     }
 }
-
-?>
