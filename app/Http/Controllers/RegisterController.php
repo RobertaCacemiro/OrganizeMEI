@@ -33,6 +33,7 @@ class RegisterController extends Controller
 
         /* Salva os dados no banco */
         $user = User::create([
+            'type' => 3,
             'access_permission' => 3,
             'name' => $request->name,
             'phone' => $request->phone,
