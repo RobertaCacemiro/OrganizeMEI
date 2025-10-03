@@ -20,6 +20,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // Executa o comando pix:gerar a cada 5 minutos
+        $schedule->command('app:cron-test')->everyMinute();
         $schedule->command('pix:gerar')->everyFiveMinutes()->withoutOverlapping();
     }
 
