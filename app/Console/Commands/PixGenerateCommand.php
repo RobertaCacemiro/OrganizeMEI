@@ -73,7 +73,9 @@ class PixGenerateCommand extends Command
 
     public function handle()
     {
-        Log::info("Iniciando PixGenerateCommand...");
+        $logFile = storage_path('logs/pix_cron.log'); // arquivo dedicado para o cron
+
+        file_put_contents($logFile, "[" . now() . "] Iniciando PixGenerateCommand...\n", FILE_APPEND);
 
         $payments = Payment::with(['mei', 'charge', 'client'])
             ->whereNull('sent_at')
@@ -135,7 +137,7 @@ class PixGenerateCommand extends Command
 
                 $this->info("E-mail enviado para {$cobranca->cliente_email}");
 
-                Log::info("Email enviado com sucesso para {$cobranca->cliente_email}");
+                file_put_contents($logFile, "[" . now() . "] E-mail enviado para {$cobranca->cliente_email}\n", FILE_APPEND);
 
                 // Marca como enviado
                 $payment->user_id_sent = $cobranca->user_id;
@@ -146,7 +148,11 @@ class PixGenerateCommand extends Command
                 $payment->save();
 
             } catch (\Exception $e) {
-                Log::error("Erro no pagamento ID {$payment->id}: " . $e->getMessage());
+                file_put_contents(
+                    $logFile,
+                    "[" . now() . "] ERRO no pagamento ID {$payment->id}: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n",
+                    FILE_APPEND
+                );
 
                 $payment->error_message = $e->getMessage();
                 $payment->status = 1;
@@ -156,6 +162,7 @@ class PixGenerateCommand extends Command
             }
         }
 
-        Log::info("PixGenerateCommand finalizado");
+        file_put_contents($logFile, "[" . now() . "] PixGenerateCommand finalizado\n", FILE_APPEND);
+
     }
 }
