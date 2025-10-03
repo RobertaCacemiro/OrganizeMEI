@@ -1,7 +1,2 @@
-#!/bin/bash
-
-# Vai para o diretório raiz do Laravel dentro do container
 cd /app
-
-# Executa o Laravel Scheduler
-php artisan schedule:run
+php artisan schedule:run >> /app/storage/logs/pix_cron.log 2>&1
