@@ -73,12 +73,16 @@ class PixGenerateCommand extends Command
 
     public function handle()
     {
+        Log::info("Iniciando PixGenerateCommand...");
+
         $payments = Payment::with(['mei', 'charge', 'client'])
             ->whereNull('sent_at')
             ->get();
 
         foreach ($payments as $payment) {
             try {
+                Log::info("Processando pagamento ID {$payment->id}");
+
                 $mei = $payment->mei;
                 $charge = $payment->charge;
                 $client = $payment->client;
@@ -124,12 +128,14 @@ class PixGenerateCommand extends Command
 
                 //Debug
                 Log::info("Tentando enviar e-mail para {$cobranca->cliente_email}");
- 
+
                 // Envia e-mail
                 Mail::to($cobranca->cliente_email)
                     ->send(new PagamentoEmail($cobranca));
 
                 $this->info("E-mail enviado para {$cobranca->cliente_email}");
+
+                Log::info("Email enviado com sucesso para {$cobranca->cliente_email}");
 
                 // Marca como enviado
                 $payment->user_id_sent = $cobranca->user_id;
@@ -140,6 +146,8 @@ class PixGenerateCommand extends Command
                 $payment->save();
 
             } catch (\Exception $e) {
+                Log::error("Erro no pagamento ID {$payment->id}: " . $e->getMessage());
+
                 $payment->error_message = $e->getMessage();
                 $payment->status = 1;
                 $payment->save();
@@ -147,5 +155,7 @@ class PixGenerateCommand extends Command
                 $this->error("Falha no envio do pagamento ID {$payment->id}: " . $e->getMessage());
             }
         }
+
+        Log::info("PixGenerateCommand finalizado");
     }
 }
