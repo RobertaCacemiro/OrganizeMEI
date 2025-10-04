@@ -4,15 +4,20 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
     /**
      * Comandos Artisan registrados.
+     * * NOTA: Este array foi limpo. O Laravel carregará automaticamente
+     * os comandos da pasta Commands no método commands().
+     * Se você precisar de comandos de pacotes de terceiros, eles
+     * são incluídos automaticamente.
      */
     protected $commands = [
-        \App\Console\Commands\PixGenerateCommand::class,
+        // O Laravel 10/11 carrega comandos automaticamente via commands().
+        // Deixamos este array vazio ou com a definição de comandos de
+        // pacotes de terceiros, se necessário.
     ];
 
     /**
@@ -20,11 +25,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $this->info("ERRO: Alguma mensagem");
-        Log::channel('pix_cron')->info("TESTE");
-        // Executa o comando pix:gerar a cada 5 minutos
-        $schedule->command('app:cron-test')->everyMinute();
-        $schedule->command('pix:gerar')->everyFiveMinutes()->withoutOverlapping();
+        // DEIXE ESTE MÉTODO VAZIO
+        // Não inclua nada aqui.
     }
 
     /**
@@ -32,8 +34,11 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
+        // O método 'load' garante que suas classes 'PixGenerateCommand'
+        // e 'TestCronCommand' sejam carregadas corretamente.
         $this->load(__DIR__ . '/Commands');
 
+        // Mantemos a rota de console para o caso de comandos definidos lá.
         require base_path('routes/console.php');
     }
 }
