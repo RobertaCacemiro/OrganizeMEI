@@ -73,20 +73,12 @@ class PixGenerateCommand extends Command
 
     public function handle()
     {
-        Log::channel('pix_cron')->info("Mensagem de teste");
-
         $payments = Payment::with(['mei', 'charge', 'client'])
             ->whereNull('sent_at')
             ->get();
 
         foreach ($payments as $payment) {
             try {
-
-                $payment->status = 0;
-                $payment->save();
-
-
-                Log::channel('pix_cron')->info("Processando pagamento ID {$payment->id}");
 
                 $mei = $payment->mei;
                 $charge = $payment->charge;
@@ -97,13 +89,15 @@ class PixGenerateCommand extends Command
                     $payment->save();
                 }
 
+                $payment->processing_at = now();
+                $payment->save();
+
                 // Busca chave PIX ativa
                 $pixKey = $mei->activePixKey()
                     ->where('is_active', 1)
                     ->first();
 
                 if (!$pixKey) {
-                    Log::channel('pix_cron')->info("Nenhuma chave PIX ativa encontrada para o MEI {$mei->id}");
                     throw new \Exception("Nenhuma chave PIX ativa encontrada para o MEI {$mei->id}");
                 }
 
@@ -120,57 +114,40 @@ class PixGenerateCommand extends Command
                 $cobranca->cpf_cnpj = $mei->cnpj;
                 $cobranca->identification = $mei->identification;
 
-                // $cobranca->user_id = $payment->user_id;
+                $cobranca->user_id = $payment->user_id;
 
-                // // Gera payload PIX
-                // $payload = $this->gerarPayloadPix(
-                //     $cobranca->chave_pix,
-                //     $cobranca->valor,
-                //     $cobranca->descricao,
-                //     $cobranca->cidade
-                // );
+                // Gera payload PIX
+                $payload = $this->gerarPayloadPix(
+                    $cobranca->chave_pix,
+                    $cobranca->valor,
+                    $cobranca->descricao,
+                    $cobranca->cidade
+                );
 
-                // $cobranca->pix_codigo = $payload;
+                $cobranca->pix_codigo = $payload;
 
-                // //Debug
-                // Log::channel('pix_cron')->info("Tentando enviar e-mail para {$cobranca->cliente_email}");
+                // Envia e-mail
+                Mail::to($cobranca->cliente_email)
+                    ->send(new PagamentoEmail($cobranca));
 
-
-                // // Envia e-mail
-                // Mail::to($cobranca->cliente_email)
-                //     ->send(new PagamentoEmail($cobranca));
-
-                // $this->info("E-mail enviado para {$cobranca->cliente_email}");
-                // Log::channel('pix_cron')->info("E-mail enviado para {$cobranca->cliente_email}");
+                $this->info("E-mail enviado para {$cobranca->cliente_email}");
 
                 // Marca como enviado
                 $payment->user_id_sent = $cobranca->user_id;
                 $payment->pix_key = $cobranca->pix_codigo;
                 $payment->sent_at = now();
                 $payment->status = 2;
+                $payment->processing_at = null;
                 $payment->error_message = null;
                 $payment->save();
 
             } catch (\Exception $e) {
-
-                Log::channel('pix_cron')->info("ERRO no pagamento ID {$payment->id}: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n");
-
-
                 $payment->error_message = $e->getMessage();
-                $payment->status = 4;
+                $payment->status = 1;
                 $payment->save();
 
                 $this->error("Falha no envio do pagamento ID {$payment->id}: " . $e->getMessage());
             }
         }
-
-        $payment->status = 5;
-        $payment->save();
-
-
-
-        Log::channel('pix_cron')->info("[" . now() . "] PixGenerateCommand finalizado\n");
-
-
     }
 }
