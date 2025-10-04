@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
@@ -19,9 +20,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        // $this->info("ERRO: Alguma mensagem");
+        Log::channel('pix_cron')->info("TESTE");
         // Executa o comando pix:gerar a cada 5 minutos
-        // $schedule->command('app:cron-test')->everyMinute();
-        // $schedule->command('pix:gerar')->everyFiveMinutes()->withoutOverlapping();
+        $schedule->command('app:cron-test')->everyMinute();
+        $schedule->command('pix:gerar')->everyFiveMinutes()->withoutOverlapping();
     }
 
     /**
