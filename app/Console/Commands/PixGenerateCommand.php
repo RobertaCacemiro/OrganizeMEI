@@ -114,8 +114,6 @@ class PixGenerateCommand extends Command
                 $cobranca->cpf_cnpj = $mei->cnpj;
                 $cobranca->identification = $mei->identification;
 
-                $cobranca->user_id = $payment->user_id;
-
                 // Gera payload PIX
                 $payload = $this->gerarPayloadPix(
                     $cobranca->chave_pix,
