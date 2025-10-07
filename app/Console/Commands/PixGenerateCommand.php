@@ -141,7 +141,7 @@ class PixGenerateCommand extends Command
 
             } catch (\Exception $e) {
                 $payment->error_message = $e->getMessage();
-                $payment->status = 1;
+                $payment->status = 0;
                 $payment->save();
 
                 $this->error("Falha no envio do pagamento ID {$payment->id}: " . $e->getMessage());
