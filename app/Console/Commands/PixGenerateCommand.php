@@ -102,6 +102,7 @@ class PixGenerateCommand extends Command
                     }
 
                     $payment->processing_at = now();
+                    $payment->status = 6; // Erro
                     $payment->save();
 
                     $this->info("Pagamento ID {$payment->id} salvo como 'processing'.");
