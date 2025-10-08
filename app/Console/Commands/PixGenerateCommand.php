@@ -73,79 +73,113 @@ class PixGenerateCommand extends Command
 
     public function handle()
     {
-        $payments = Payment::with(['mei', 'charge', 'client'])
-            ->whereNull('sent_at')
-            ->get();
+        $this->info("--- Iniciando o comando pix:gerar ---");
+        Log::info("Início do PixGenerateCommand.");
 
-        foreach ($payments as $payment) {
-            try {
+        try {
+            // 1. VERIFICAÇÃO DE CONSULTA (DATA)
+            $payments = Payment::with(['mei', 'charge', 'client'])
+                ->whereNull('sent_at')
+                ->get();
 
-                $mei = $payment->mei;
-                $charge = $payment->charge;
-                $client = $payment->client;
+            $count = $payments->count();
+            $this->warn("Total de pagamentos encontrados para envio: {$count}");
+            Log::info("Pagamentos a serem processados: {$count}.");
 
-                if (!$payment->key) {
-                    $payment->key = Str::uuid()->toString();
-                    $payment->save();
-                }
-
-                $payment->processing_at = now();
-                $payment->save();
-
-                // Busca chave PIX ativa
-                $pixKey = $mei->activePixKey()
-                    ->where('is_active', 1)
-                    ->first();
-
-                if (!$pixKey) {
-                    throw new \Exception("Nenhuma chave PIX ativa encontrada para o MEI {$mei->id}");
-                }
-
-                // // Monta objeto de cobrança
-                $cobranca = new \stdClass();
-                $cobranca->id = $charge->id;
-                $cobranca->key = $payment->key;
-                $cobranca->cliente_email = $client->email;
-                $cobranca->cliente_nome = $client->name;
-                $cobranca->chave_pix = $pixKey->key_value;
-                $cobranca->valor = $payment->amount;
-                $cobranca->descricao = $charge->description;
-                $cobranca->cidade = $mei->city;
-                $cobranca->cpf_cnpj = $mei->cnpj;
-                $cobranca->identification = $mei->identification;
-
-                // Gera payload PIX
-                $payload = $this->gerarPayloadPix(
-                    $cobranca->chave_pix,
-                    $cobranca->valor,
-                    $cobranca->descricao,
-                    $cobranca->cidade
-                );
-
-                $cobranca->pix_codigo = $payload;
-
-                // Envia e-mail
-                Mail::to($cobranca->cliente_email)
-                    ->send(new PagamentoEmail($cobranca));
-
-                $this->info("E-mail enviado para {$cobranca->cliente_email}");
-
-                // Marca como enviado
-                $payment->user_id_sent = $cobranca->user_id;
-                $payment->pix_key = $cobranca->pix_codigo;
-                $payment->sent_at = now();
-                $payment->status = 2;
-                $payment->processing_at = null;
-                $payment->error_message = null;
-                $payment->save();
-
-            } catch (\Exception $e) {
-                $payment->error_message = $e->getMessage();
-                $payment->status = 0;
-                $payment->save();
-
-                $this->error("Falha no envio do pagamento ID {$payment->id}: " . $e->getMessage());
+            if ($count === 0) {
+                $this->info("Nenhum pagamento pendente. Encerrando.");
+                return;
             }
+
+            foreach ($payments as $payment) {
+                $this->info("Processando pagamento ID: {$payment->id}");
+
+                // 2. PRIMEIRO PONTO DE SALVAMENTO NO BANCO
+                // Se esta linha falhar, o erro DEVE ser capturado pelo catch.
+                try {
+                    if (!$payment->key) {
+                        $payment->key = Str::uuid()->toString();
+                    }
+
+                    $payment->processing_at = now();
+                    $payment->save();
+
+                    $this->info("Pagamento ID {$payment->id} salvo como 'processing'.");
+                    Log::info("Pagamento ID {$payment->id} marcado como 'processing'.");
+
+                    // Resto da lógica (PIX, e-mail)
+                    $mei = $payment->mei;
+                    $charge = $payment->charge;
+                    $client = $payment->client;
+
+                    $pixKey = $mei->activePixKey()
+                        ->where('is_active', 1)
+                        ->first();
+
+                    if (!$pixKey) {
+                        throw new \Exception("Nenhuma chave PIX ativa encontrada para o MEI {$mei->id}");
+                    }
+
+                    // Monta objeto de cobrança... (seu código continua aqui)
+                    $cobranca = new \stdClass();
+                    $cobranca->id = $charge->id;
+                    $cobranca->key = $payment->key;
+                    $cobranca->cliente_email = $client->email;
+                    $cobranca->cliente_nome = $client->name;
+                    $cobranca->chave_pix = $pixKey->key_value;
+                    $cobranca->valor = $payment->amount;
+                    $cobranca->descricao = $charge->description;
+                    $cobranca->cidade = $mei->city;
+                    $cobranca->cpf_cnpj = $mei->cnpj;
+                    $cobranca->identification = $mei->identification;
+                    $cobranca->user_id = $payment->user_id; // Adicionei isso, pois você usava user_id_sent abaixo
+
+                    $payload = $this->gerarPayloadPix(
+                        $cobranca->chave_pix,
+                        $cobranca->valor,
+                        $cobranca->descricao,
+                        $cobranca->cidade
+                    );
+
+                    $cobranca->pix_codigo = $payload;
+                    $this->info("Payload PIX gerado para ID {$payment->id}.");
+
+                    // 3. PONTO DE ENVIO DE E-MAIL
+                    Mail::to($cobranca->cliente_email)
+                        ->send(new PagamentoEmail($cobranca));
+
+                    $this->info("E-mail enviado com sucesso para {$cobranca->cliente_email}");
+                    Log::info("E-mail enviado para {$cobranca->cliente_email}.");
+
+                    // 4. ÚLTIMO PONTO DE SALVAMENTO NO BANCO
+                    $payment->user_id_sent = $cobranca->user_id;
+                    $payment->pix_key = $cobranca->pix_codigo;
+                    $payment->sent_at = now();
+                    $payment->status = 2;
+                    $payment->processing_at = null;
+                    $payment->error_message = null;
+                    $payment->save();
+
+                    $this->info("Pagamento ID {$payment->id} marcado como 'enviado'.");
+                    Log::info("Pagamento ID {$payment->id} marcado como 'enviado'.");
+
+                } catch (\Exception $e) {
+                    // CATCH DENTRO DO LOOP (Erros de PIX ou E-mail)
+                    $payment->error_message = $e->getMessage();
+                    $payment->status = 0; // Erro
+                    $payment->processing_at = null; // Libera o processamento
+                    $payment->save();
+
+                    $this->error("Falha no envio do pagamento ID {$payment->id}: " . $e->getMessage());
+                    Log::error("ERRO ao processar Pagamento ID {$payment->id}: " . $e->getMessage());
+                }
+            }
+        } catch (\Exception $e) {
+            // CATCH FORA DO LOOP (Erros de Conexão ou Consulta)
+            $this->error("ERRO FATAL DE CONEXÃO OU CONSULTA: " . $e->getMessage());
+            Log::critical("ERRO FATAL: " . $e->getMessage());
         }
+
+        $this->info("--- Comando pix:gerar finalizado ---");
     }
 }
