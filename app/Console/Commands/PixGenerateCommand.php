@@ -175,6 +175,8 @@ class PixGenerateCommand extends Command
                 }
             }
         } catch (\Exception $e) {
+            $payment->status = 5; // Erro
+
             // CATCH FORA DO LOOP (Erros de Conexão ou Consulta)
             $this->error("ERRO FATAL DE CONEXÃO OU CONSULTA: " . $e->getMessage());
             Log::critical("ERRO FATAL: " . $e->getMessage());
