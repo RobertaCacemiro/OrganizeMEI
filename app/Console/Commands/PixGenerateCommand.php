@@ -73,30 +73,26 @@ class PixGenerateCommand extends Command
 
     public function handle()
     {
-        $this->info("--- Iniciando o comando pix:gerar ---");
-        Log::info("Início do PixGenerateCommand.");
-
         try {
             // 1. VERIFICAÇÃO DE CONSULTA (DATA)
             $payments = Payment::with(['mei', 'charge', 'client'])
                 ->whereNull('sent_at')
                 ->get();
 
-            $count = $payments->count();
-            $this->warn("Total de pagamentos encontrados para envio: {$count}");
-            Log::info("Pagamentos a serem processados: {$count}.");
+            // $count = $payments->count();
 
-            if ($count === 0) {
-                $this->info("Nenhum pagamento pendente. Encerrando.");
-                return;
-            }
+            // showArray(["pagamentos" => $payments]);
+            // dump($payments);
+
+            // dd($payments->toArray());
+            // exit;
 
             foreach ($payments as $payment) {
-                $this->info("Processando pagamento ID: {$payment->id}");
 
                 // 2. PRIMEIRO PONTO DE SALVAMENTO NO BANCO
                 // Se esta linha falhar, o erro DEVE ser capturado pelo catch.
                 try {
+
                     if (!$payment->key) {
                         $payment->key = Str::uuid()->toString();
                     }
@@ -105,13 +101,25 @@ class PixGenerateCommand extends Command
                     $payment->status = 6; // Erro
                     $payment->save();
 
-                    $this->info("Pagamento ID {$payment->id} salvo como 'processing'.");
-                    Log::info("Pagamento ID {$payment->id} marcado como 'processing'.");
+                    // $this->info("Pagamento ID {$payment->id} salvo como 'processing'.");
+                    // Log::info("Pagamento ID {$payment->id} marcado como 'processing'.");
+
+                    $chargeId = $payment->charge->id;
+
+                    if (!$payment->charge) {
+                        $payment->error_message = 'Cobrança não encontrada para este pagamento.';
+                        $payment->save();
+                        $this->error("Pagamento #{$payment->id} sem cobrança vinculada.");
+                        continue; // pula para o próximo pagamento
+                    }
 
                     // Resto da lógica (PIX, e-mail)
                     $mei = $payment->mei;
                     $charge = $payment->charge;
                     $client = $payment->client;
+
+                    // dump(["COBRANÇA" => $charge]);
+                    // exit;
 
                     $pixKey = $mei->activePixKey()
                         ->where('is_active', 1)
@@ -143,14 +151,13 @@ class PixGenerateCommand extends Command
                     );
 
                     $cobranca->pix_codigo = $payload;
-                    $this->info("Payload PIX gerado para ID {$payment->id}.");
 
                     // 3. PONTO DE ENVIO DE E-MAIL
                     Mail::to($cobranca->cliente_email)
                         ->send(new PagamentoEmail($cobranca));
 
-                    $this->info("E-mail enviado com sucesso para {$cobranca->cliente_email}");
-                    Log::info("E-mail enviado para {$cobranca->cliente_email}.");
+                    // $this->info("E-mail enviado com sucesso para {$cobranca->cliente_email}");
+                    // Log::info("E-mail enviado para {$cobranca->cliente_email}.");
 
                     // 4. ÚLTIMO PONTO DE SALVAMENTO NO BANCO
                     $payment->user_id_sent = $cobranca->user_id;
@@ -161,8 +168,8 @@ class PixGenerateCommand extends Command
                     $payment->error_message = null;
                     $payment->save();
 
-                    $this->info("Pagamento ID {$payment->id} marcado como 'enviado'.");
-                    Log::info("Pagamento ID {$payment->id} marcado como 'enviado'.");
+                    // $this->info("Pagamento ID {$payment->id} marcado como 'enviado'.");
+                    // Log::info("Pagamento ID {$payment->id} marcado como 'enviado'.");
 
                 } catch (\Exception $e) {
                     // CATCH DENTRO DO LOOP (Erros de PIX ou E-mail)
@@ -171,18 +178,18 @@ class PixGenerateCommand extends Command
                     $payment->processing_at = null; // Libera o processamento
                     $payment->save();
 
-                    $this->error("Falha no envio do pagamento ID {$payment->id}: " . $e->getMessage());
-                    Log::error("ERRO ao processar Pagamento ID {$payment->id}: " . $e->getMessage());
+                    // $this->error("Falha no envio do pagamento ID {$payment->id}: " . $e->getMessage());
+                    // Log::error("ERRO ao processar Pagamento ID {$payment->id}: " . $e->getMessage());
                 }
             }
         } catch (\Exception $e) {
             $payment->status = 5; // Erro
 
             // CATCH FORA DO LOOP (Erros de Conexão ou Consulta)
-            $this->error("ERRO FATAL DE CONEXÃO OU CONSULTA: " . $e->getMessage());
-            Log::critical("ERRO FATAL: " . $e->getMessage());
+            // $this->error("ERRO FATAL DE CONEXÃO OU CONSULTA: " . $e->getMessage());
+            // Log::critical("ERRO FATAL: " . $e->getMessage());
         }
 
-        $this->info("--- Comando pix:gerar finalizado ---");
+        // $this->info("--- Comando pix:gerar finalizado ---");
     }
 }
