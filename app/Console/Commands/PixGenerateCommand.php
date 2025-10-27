@@ -97,6 +97,7 @@ class PixGenerateCommand extends Command
                 // 2. PRIMEIRO PONTO DE SALVAMENTO NO BANCO
                 // Se esta linha falhar, o erro DEVE ser capturado pelo catch.
                 try {
+
                     if (!$payment->key) {
                         $payment->key = Str::uuid()->toString();
                     }
@@ -112,6 +113,9 @@ class PixGenerateCommand extends Command
                     $mei = $payment->mei;
                     $charge = $payment->charge;
                     $client = $payment->client;
+
+                    // dump(["COBRANÇA" => $charge]);
+                    // exit;
 
                     $pixKey = $mei->activePixKey()
                         ->where('is_active', 1)
