@@ -2,41 +2,19 @@
 
 namespace App\Providers;
 
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Mail\MailManager;
+use App\Mail\SendGridTransport;
+use Illuminate\Support\Facades\Log;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        //
-    }
+    public function register() {}
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
+    public function boot()
     {
-        if ($this->app->environment('production')) {
-            URL::forceScheme('https');
-        }
-
-        Inertia::share([
-            'auth' => function () {
-                $user = auth()->user();
-                return [
-                    'id' => session('id'),
-                    'type' => session('type'),
-                    'access' => session('access'),
-                    'mei_id' => session('mei_id'),
-                    'user' => $user,
-                ];
-            }
-        ]);
+        $this->app->make(MailManager::class)->extend('sendgrid', function ($config) {
+            return new SendGridTransport(env('SENDGRID_API_KEY'), Log::channel('stack'));
+        });
     }
 }

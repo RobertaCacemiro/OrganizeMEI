@@ -73,21 +73,26 @@ class PixGenerateCommand extends Command
 
     public function handle()
     {
+        // $this->info("--- Iniciando o comando pix:gerar ---");
+        // Log::info("Início do PixGenerateCommand.");
+
         try {
             // 1. VERIFICAÇÃO DE CONSULTA (DATA)
             $payments = Payment::with(['mei', 'charge', 'client'])
                 ->whereNull('sent_at')
                 ->get();
 
-            // $count = $payments->count();
+            $count = $payments->count();
+            // $this->warn("Total de pagamentos encontrados para envio: {$count}");
+            // Log::info("Pagamentos a serem processados: {$count}.");
 
-            // showArray(["pagamentos" => $payments]);
-            // dump($payments);
-
-            // dd($payments->toArray());
-            // exit;
+            // if ($count === 0) {
+            //     $this->info("Nenhum pagamento pendente. Encerrando.");
+            //     return;
+            // }
 
             foreach ($payments as $payment) {
+                // $this->info("Processando pagamento ID: {$payment->id}");
 
                 // 2. PRIMEIRO PONTO DE SALVAMENTO NO BANCO
                 // Se esta linha falhar, o erro DEVE ser capturado pelo catch.
@@ -103,15 +108,6 @@ class PixGenerateCommand extends Command
 
                     // $this->info("Pagamento ID {$payment->id} salvo como 'processing'.");
                     // Log::info("Pagamento ID {$payment->id} marcado como 'processing'.");
-
-                    $chargeId = $payment->charge->id;
-
-                    if (!$payment->charge) {
-                        $payment->error_message = 'Cobrança não encontrada para este pagamento.';
-                        $payment->save();
-                        $this->error("Pagamento #{$payment->id} sem cobrança vinculada.");
-                        continue; // pula para o próximo pagamento
-                    }
 
                     // Resto da lógica (PIX, e-mail)
                     $mei = $payment->mei;
@@ -151,6 +147,7 @@ class PixGenerateCommand extends Command
                     );
 
                     $cobranca->pix_codigo = $payload;
+                    // $this->info("Payload PIX gerado para ID {$payment->id}.");
 
                     // 3. PONTO DE ENVIO DE E-MAIL
                     Mail::to($cobranca->cliente_email)
