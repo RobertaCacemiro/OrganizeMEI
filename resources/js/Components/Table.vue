@@ -180,7 +180,7 @@ function formatValue(value, type) {
                 class="p-1 text-gray-600 hover:text-[#3DA700]"
             >
                 <svg
-                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns="https://www.w3.org/2000/svg"
                     class="w-5 h-5"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -196,7 +196,7 @@ function formatValue(value, type) {
             </Link>
             <span v-else-if="index === 0" class="p-1 text-gray-400">
                 <svg
-                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns="https://www.w3.org/2000/svg"
                     class="w-5 h-5"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -238,7 +238,7 @@ function formatValue(value, type) {
                 class="p-1 text-gray-600 hover:text-[#3DA700]"
             >
                 <svg
-                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns="https://www.w3.org/2000/svg"
                     class="w-5 h-5"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -257,7 +257,7 @@ function formatValue(value, type) {
                 class="p-1 text-gray-400"
             >
                 <svg
-                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns="https://www.w3.org/2000/svg"
                     class="w-5 h-5"
                     fill="none"
                     viewBox="0 0 24 24"
