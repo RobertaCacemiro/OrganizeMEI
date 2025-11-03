@@ -1,14 +1,13 @@
 <template>
     <Sidebar>
         <div :class="{ 'blur-sm pointer-events-none select-none': !isPremium }">
-            <!-- <div class="flex justify-end items-center pb-3">
-                <RegisterButton
-                    ref="registerButtonRef"
-                    :nomenclature="'NOVO LANÇAMENTO'"
-                    :form="FormBoleto"
-                    :data="registroSelecionado"
-                />
-            </div> -->
+            <div class="flex justify-end items-center pb-3">
+                <ManipulationButton :id="42" @open-modal="fAbrirModal">
+                    GERENCIAR CHAVES
+                </ManipulationButton>
+
+                <PixKeys :id="modalId" v-model:open="modalOpen" />
+            </div>
             <div class="mt-6">
                 <Table :columnsName="colunas" :data="data" :actions="actions" />
 
@@ -70,8 +69,10 @@ import { useForm, usePage } from "@inertiajs/vue3";
 import Sidebar from "@/Components/Sidebar.vue";
 import Table from "@/Components/Table.vue";
 
+import ManipulationButton from "../Components/ManipulationButton.vue";
+import PixKeys from "./PixKeys.vue";
+
 import RegisterButton from "../Components/RegisterButton.vue";
-import FormBoleto from "../Components/FormBoleto.vue";
 import ConfirmAction from "../Components/ConfirmAction.vue";
 
 const props = defineProps({
@@ -87,7 +88,7 @@ const props = defineProps({
 
 const page = usePage();
 const user = page.props.auth?.user ?? {};
-const isPremium = [1, 2].includes(user.access_permission);
+const isPremium = [1, 2].includes(user.access);
 
 const data = ref(props.data);
 
@@ -109,9 +110,6 @@ const actions = [
 
 const form = useForm({});
 
-let registerButtonRef = ref(null);
-let registroSelecionado = ref({});
-
 function fEditar(id) {
     console.log("Editar");
 }
@@ -129,6 +127,14 @@ function fExcluir(id) {
     form.delete(`/boletos/${id}`, {
         preserveScroll: true,
     });
+}
+
+const modalOpen = ref(false);
+const modalId = ref(null);
+
+function fAbrirModal(id) {
+    modalId.value = id;
+    modalOpen.value = true;
 }
 
 function fVisualizarEmailPIX() {

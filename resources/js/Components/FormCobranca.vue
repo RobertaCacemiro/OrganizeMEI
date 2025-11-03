@@ -248,7 +248,7 @@ const page = usePage();
 const user = page.props.auth?.user ?? {};
 
 // Verifica se ele é premium (1 ou 2)
-const isPremium = [1, 2].includes(user.access_permission);
+const isPremium = [1, 2].includes(user.access);
 
 const premiumModal = ref(null);
 
