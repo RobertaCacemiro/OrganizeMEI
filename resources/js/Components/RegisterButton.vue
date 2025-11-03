@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { watch } from "vue";
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits(["close", "refresh"]);
 
 const props = defineProps({
     nomenclature: String,

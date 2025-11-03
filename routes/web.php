@@ -13,9 +13,13 @@ use App\Http\Controllers\{
     ChargeController,
     CategoriesController,
     PaymentController,
-    ProofController
+    ProofController,
+    MeiPixKeyController
 };
 
+Route::get('/pix-keys', [MeiPixKeyController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('pix-keys.index');
 
 // Rotas para acessar o sistema
 Route::get('/register', function () {
@@ -102,6 +106,14 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/pagamentos', [PaymentController::class, 'index'])->name('pagamentos.index');
 
+        Route::get('/comprovante/{key}', [ProofController::class, 'show'])->name('comprovante.show');
+
+        Route::get('/api/pix-keys', [MeiPixKeyController::class, 'index'])
+            ->name('pix.keys.fetch');
+        Route::delete('/pix-keys/{id}', [MeiPixKeyController::class, 'destroy']);
+        Route::put('/pix-keys/{id}/activate', [MeiPixKeyController::class, 'update']);
+
+        Route::post('/pix-keys/store', [MeiPixKeyController::class, 'store']);
 
 
     });

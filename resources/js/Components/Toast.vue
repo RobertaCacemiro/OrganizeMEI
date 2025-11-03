@@ -1,42 +1,33 @@
 <template>
-    <div
-        v-if="visible"
-        :class="[
-            'fixed z-50 px-4 py-2 rounded shadow-lg transition-opacity duration-500',
-            positionClass,
-            bgColor,
-            sizeClass,
-        ]"
-    >
-        {{ message }}
-    </div>
+    <teleport to="body">
+        <div
+            v-if="visible"
+            :class="[
+                'fixed z-[9999] px-4 py-2 rounded shadow-lg transition-opacity duration-500',
+                bgColor,
+                sizeClass,
+            ]"
+            :style="positionStyle"
+        >
+            {{ message }}
+        </div>
+    </teleport>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from "vue";
-
-const props = defineProps({
-    message: String,
-    type: {
-        type: String,
-        default: "info", // 'success', 'error', 'info'
-    },
-    duration: {
-        type: Number,
-        default: 3000, // tempo em ms
-    },
-    position: {
-        type: String,
-        default: "top-right", // 'top-left', 'bottom-right', etc.
-    },
-    size: {
-        type: String,
-        default: "md", // 'sm', 'md', 'lg'
-    },
-});
+import { ref, onMounted, computed } from "vue";
 
 const visible = ref(false);
 
+const props = defineProps({
+    message: String,
+    type: { type: String, default: "info" },
+    duration: { type: Number, default: 3000 },
+    position: { type: String, default: "top-right" }, // desktop
+    size: { type: String, default: "md" },
+});
+
+// cores
 const bgColor =
     {
         success: "bg-green-600 text-white",
@@ -44,21 +35,46 @@ const bgColor =
         info: "bg-blue-600 text-white",
     }[props.type] || "bg-gray-700 text-white";
 
-const positionClass =
-    {
-        "top-right": "top-5 right-5",
-        "top-left": "top-5 left-5",
-        "bottom-right": "bottom-5 right-5",
-        "bottom-left": "bottom-5 left-5",
-        center: "top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2",
-    }[props.position] || "top-5 right-5";
-
+// tamanho
 const sizeClass =
     {
         sm: "text-sm",
         md: "text-base",
         lg: "text-lg",
     }[props.size] || "text-base";
+
+// estilo da posição
+const positionStyle = computed(() => {
+    const isMobile = window.innerWidth < 640;
+
+    if (isMobile) {
+        return {
+            top: "1.25rem", // top-5
+            left: "50%",
+            transform: "translateX(-50%)",
+        };
+    }
+
+    // desktop
+    switch (props.position) {
+        case "top-right":
+            return { top: "1.25rem", right: "1.25rem" };
+        case "top-left":
+            return { top: "1.25rem", left: "1.25rem" };
+        case "bottom-right":
+            return { bottom: "1.25rem", right: "1.25rem" };
+        case "bottom-left":
+            return { bottom: "1.25rem", left: "1.25rem" };
+        case "center":
+            return {
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+            };
+        default:
+            return { top: "1.25rem", right: "1.25rem" };
+    }
+});
 
 onMounted(() => {
     visible.value = true;
