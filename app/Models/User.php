@@ -53,9 +53,12 @@ class User extends Authenticatable
 
     public function meiProfile()
     {
-        return $this->belongsToMany(MeiProfile::class, 'mei_profile_user')
-            ->withTimestamps()
-            ->withPivot(['created_at', 'updated_at']);
+        return $this->belongsToMany(
+            MeiProfile::class,
+            'mei_profile_user',
+            'user_id',
+            'mei_profile_id'
+        )->withTimestamps();
     }
 
     public function clients()

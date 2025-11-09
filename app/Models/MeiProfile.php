@@ -29,8 +29,14 @@ class MeiProfile extends Model
     // Relacionamento com User
     public function users()
     {
-        return $this->belongsToMany(User::class, 'mei_profile_user')
-            ->withTimestamps();
+        // return $this->belongsToMany(User::class, 'mei_profile_user')
+        //     ->withTimestamps();
+        return $this->belongsToMany(
+            User::class,
+            'mei_profile_user',
+            'mei_profile_id',
+            'user_id'
+        )->withTimestamps();
     }
 
     public function clients()

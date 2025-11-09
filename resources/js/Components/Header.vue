@@ -3,12 +3,11 @@ import { usePage } from "@inertiajs/vue3";
 
 const page = usePage();
 
-const profilePhoto = page.props.auth?.user?.profile_photo;
+const profilePhoto = page.props.auth?.user;
 
 const props = defineProps({
     denTela: String,
 });
-
 </script>
 <template>
     <div class="flex-1">
@@ -25,8 +24,8 @@ const props = defineProps({
                     <img
                         alt="Foto de perfil do MEI"
                         :src="
-                            profilePhoto
-                                ? `/storage/${profilePhoto}`
+                            page.props.auth.user.profile_photo
+                                ? `/storage/${page.props.auth.user.profile_photo}`
                                 : 'https://placehold.co/200x200'
                         "
                     />
