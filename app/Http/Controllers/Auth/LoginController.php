@@ -26,6 +26,7 @@ class LoginController extends Controller
                 'type' => $user->type,
                 'access' => $user->access_permission,
                 'mei_id' => $mei?->id,
+                'mei_cnpj' => $mei?->cnpj
             ]);
 
             if (empty($mei)) {

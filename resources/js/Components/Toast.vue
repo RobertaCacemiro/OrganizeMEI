@@ -23,7 +23,7 @@ const props = defineProps({
     message: String,
     type: { type: String, default: "info" },
     duration: { type: Number, default: 3000 },
-    position: { type: String, default: "top-right" }, // desktop
+    position: { type: String, default: "top-right" },
     size: { type: String, default: "md" },
 });
 
@@ -41,21 +41,21 @@ const sizeClass =
         sm: "text-sm",
         md: "text-base",
         lg: "text-lg",
+        xl: "text-xl",
     }[props.size] || "text-base";
 
-// estilo da posição
+// posição
 const positionStyle = computed(() => {
     const isMobile = window.innerWidth < 640;
 
     if (isMobile) {
         return {
-            top: "1.25rem", // top-5
+            top: "1.25rem",
             left: "50%",
             transform: "translateX(-50%)",
         };
     }
 
-    // desktop
     switch (props.position) {
         case "top-right":
             return { top: "1.25rem", right: "1.25rem" };
@@ -70,6 +70,18 @@ const positionStyle = computed(() => {
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
+            };
+        case "top-center":
+            return {
+                top: "1.25rem",
+                left: "50%",
+                transform: "translateX(-50%)",
+            };
+        case "bottom-center":
+            return {
+                bottom: "1.25rem",
+                left: "50%",
+                transform: "translateX(-50%)",
             };
         default:
             return { top: "1.25rem", right: "1.25rem" };

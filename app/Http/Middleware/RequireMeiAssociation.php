@@ -36,7 +36,8 @@ class RequireMeiAssociation
         }
 
         if (!session()->has('mei_id')) {
-            return redirect()->route('profile-mei.index');
+            return redirect()->route('profile-mei.index')
+                ->with('warning', 'Você precisa cadastrar o perfil MEI antes de continuar.');
         }
 
         return $next($request);

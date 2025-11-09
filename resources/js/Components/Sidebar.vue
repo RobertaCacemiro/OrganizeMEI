@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed } from "vue";
-import { usePage, router } from "@inertiajs/vue3";
-
+import { usePage, router, Link } from "@inertiajs/vue3";
 import Header from "@/Components/Header.vue";
 
 import { AlignJustify } from "lucide-vue-next";
@@ -78,7 +77,7 @@ function flogout() {
                 <div>
                     <button
                         @click="toggleSidebar"
-                        class="bg-[#3DA700] text-white p-2 border-none rounded-none hover:bg-[#3DA700] hover:text-white focus:outline-none focus:ring-0 active:bg-[#3DA700]"
+                        class="bg-[#3DA700] text-white p-2 border-none rounded-none hover:bg-[#3DA700] focus:outline-none focus:ring-0"
                     >
                         <AlignJustify />
                     </button>
@@ -88,7 +87,7 @@ function flogout() {
             <!-- Menu -->
             <ul class="menu">
                 <li v-for="(value, key) in menuItems" :key="key" class="m-1">
-                    <a
+                    <Link
                         :href="value.route"
                         :class="[
                             'font-bold flex items-center gap-2',
@@ -99,7 +98,7 @@ function flogout() {
                     >
                         <component :is="value.icon" />
                         <span v-if="isExpanded">{{ value.label }}</span>
-                    </a>
+                    </Link>
                 </li>
             </ul>
 
@@ -150,7 +149,9 @@ function flogout() {
                 ></div>
 
                 <!-- Menu lateral mobile -->
-                <div class="bg-[#3DA700] text-white w-64 p-4 z-50 flex flex-col justify-between h-full">
+                <div
+                    class="bg-[#3DA700] text-white w-64 p-4 z-50 flex flex-col justify-between h-full"
+                >
                     <div class="flex justify-between items-center mb-4">
                         <a href="/">
                             <img src="/resources/img/logo.png" alt="Logo" />
@@ -169,7 +170,7 @@ function flogout() {
                             :key="key"
                             class="m-1"
                         >
-                            <a
+                            <Link
                                 :href="value.route"
                                 :class="[
                                     'font-bold flex items-center gap-2',
@@ -180,7 +181,7 @@ function flogout() {
                             >
                                 <component :is="value.icon" />
                                 <span>{{ value.label }}</span>
-                            </a>
+                            </Link>
                         </li>
                     </ul>
 

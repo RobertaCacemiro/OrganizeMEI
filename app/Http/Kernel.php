@@ -40,6 +40,6 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
         'auth' => \App\Http\Middleware\Authenticate::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'require.mei' => \App\Http\Middleware\RequireMeiAssociation::class, // <- ESSA LINHA
+        'require.mei' => \App\Http\Middleware\RequireMeiAssociation::class,
     ];
 }

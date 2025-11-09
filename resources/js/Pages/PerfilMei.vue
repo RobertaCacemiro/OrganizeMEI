@@ -32,7 +32,7 @@
 
                                     <input
                                         type="file"
-                                        @change="handleImageUpload"
+                                        @change="fHandleImageUpload"
                                         class="file-input file-input-bordered w-full"
                                         accept="image/*"
                                         required
@@ -51,7 +51,7 @@
 
                 <!-- Seção do Formulário -->
                 <div class="w-full md:w-2/3 lg:w-3/4">
-                    <form class="space-y-3" @submit.prevent="submit()">
+                    <form class="space-y-3" @submit.prevent="fSubmit()">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <fieldset class="fieldset">
                                 <legend class="fieldset-legend">
@@ -60,21 +60,25 @@
                                 </legend>
                                 <IMaskComponent
                                     v-model="form.cnpj"
-                                    :mask="'00.000.000/0000-00'"
-                                    class="input validator input-lg input-bordered w-full"
-                                    :class="{
-                                        'input-error': cnpjState === 'invalid',
-                                        'input-valid': cnpjState === 'valid',
-                                    }"
+                                    v-bind="isEdit ? { readonly: true } : {}"
+                                    :mask="mask"
                                     placeholder="00.000.000/0000-00"
-                                    @accept="validateCnpjLive"
-                                    required
+                                    @accept="fValidateCNPJLivre"
+                                    class="input validator input-lg input-bordered w-full transition-colors"
+                                    :class="{
+                                        '!border-red-500 !focus:border-red-500':
+                                            cnpjState === 'invalid',
+                                        '!border-green-500 !focus:border-green-500':
+                                            cnpjState === 'valid',
+                                    }"
                                 />
-                                <div
-                                    class="validator-hint"
-                                    :class="{ hidden: cnpjState !== 'invalid' }"
-                                >
-                                    {{ cnpjErrorMessage }}
+                                <div class="mt-1 h-5">
+                                    <p
+                                        v-if="cnpjState === 'invalid'"
+                                        class="text-red-600 text-sm flex items-center gap-1"
+                                    >
+                                        CNPJ inválido
+                                    </p>
                                 </div>
                             </fieldset>
 
@@ -240,17 +244,23 @@
                             </fieldset>
                         </div>
 
-                        <div class="flex flex-row gap-4 justify-end">
+                        <div
+                            class="flex flex-col md:flex-row gap-4 justify-end"
+                        >
                             <button
-                                @click="resetForm"
-                                class="btn text-white bg-[#FF0015] hover:bg-[#FF0018] w-1/4 rounded-xl"
+                                type="button"
+                                @click="fResetForm"
+                                :disabled="!formModified && isEdit"
+                                class="btn text-white bg-[#FF0015] hover:bg-[#FF0020] w-full md:w-1/4 rounded-xl"
                             >
                                 CANCELAR
                             </button>
 
                             <button
-                                @click.prevent="submit(isEdit)"
-                                class="btn text-white bg-[#3DA700] hover:bg-[#388E3C] w-1/4 rounded-xl"
+                                type="submit"
+                                @click.prevent="fSubmit(isEdit)"
+                                :disabled="!formModified && isEdit"
+                                class="btn text-white bg-[#3DA700] hover:bg-[#388E3C] w-full md:w-1/4 rounded-xl"
                             >
                                 SALVAR
                             </button>
@@ -275,15 +285,17 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
-import { useForm, usePage } from "@inertiajs/vue3";
-import Sidebar from "@/Components/Sidebar.vue";
-import Toast from "@/Components/Toast.vue"; // ajuste o caminho conforme sua estrutura
-import { fValidaCpfCnpj  } from "@/utils/validators";
-import { useCepService } from "@/utils/cepService"; // Importe o serviço
-import { MagnifyingGlassIcon } from "@heroicons/vue/24/outline"; // Importe o ícone de pesquisa
-
+import { ref, reactive, watch, nextTick } from "vue";
+import { useForm, usePage, router } from "@inertiajs/vue3";
+import { onMounted, onBeforeUnmount } from "vue";
 import { IMaskComponent } from "vue-imask";
+
+import Sidebar from "@/Components/Sidebar.vue";
+import Toast from "@/Components/Toast.vue";
+
+import { fValidaCnpj } from "@/utils/validators";
+import { useCepService } from "@/utils/cepService";
+import { MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
 
 const props = defineProps({
     data: {
@@ -296,12 +308,51 @@ const props = defineProps({
     },
 });
 
+let removeBeforeHook = null;
+
+function fVerificaCadastro(event) {
+    const meiId = usePage().props.auth?.user?.mei_id;
+    const targetUrl = event.detail.visit.url.pathname;
+    const rotasLiberadas = [
+        "/logout",
+        "/login",
+        "/register",
+        "/perfil-mei",
+        "/profile-mei/store",
+    ];
+
+    if (rotasLiberadas.some((r) => targetUrl.startsWith(r))) {
+        return true;
+    }
+
+    if (!meiId) {
+        fShowToast(
+            "Você precisa cadastrar o perfil MEI para continuar!",
+            "info",
+            "top-center",
+            4000,
+            "xl"
+        );
+        return false;
+    }
+}
+
+onMounted(() => {
+    removeBeforeHook = router.on("before", fVerificaCadastro);
+});
+
+onBeforeUnmount(() => {
+    if (typeof removeBeforeHook === "function") {
+        removeBeforeHook();
+    }
+});
+
 const toast = reactive({
     visible: false,
     message: "",
 });
 
-function mostrarToast(
+function fShowToast(
     msg,
     tipo = "error",
     posicao = "bottom-right",
@@ -320,32 +371,65 @@ function mostrarToast(
     }, duracao);
 }
 
-const data = props.data;
-const isEdit = props.isEdit;
+const data = props.data ?? {};
+const isEdit = ref(props.isEdit);
 
-let form = useForm({
-    cnpj: data?.cnpj ?? null,
-    identification: data?.identification ?? null,
-    email: data?.email ?? null,
-    phone: data?.phone ?? null,
-    street: data?.street ?? null,
+const form = useForm({
+    cnpj: data?.cnpj ?? "",
+    phone: data?.phone ?? "",
+    zip_code: data?.zip_code ?? "",
+    identification: data?.identification ?? "",
+    email: data?.email ?? "",
+    street: data?.street ?? "",
     number: data?.number ?? null,
-    complement: data?.complement ?? null,
-    district: data?.district ?? null,
-    city: data?.city ?? null,
-    state: data?.state ?? null,
-    zip_code: data?.zip_code ?? null,
+    complement: data?.complement ?? "",
+    district: data?.district ?? "",
+    city: data?.city ?? "",
+    state: data?.state ?? "",
     profile_photo: data?.profile_photo ?? null,
 });
 
-function resetForm() {
-    Object.assign(form, props.data); // Restaura o formulário original
+let originalData = {};
+const formModified = ref(false);
+const isEditInternal = ref(props.isEdit || false);
+
+onMounted(() => {
+    if (isEditInternal.value) {
+        originalData = JSON.parse(JSON.stringify(form.data()));
+    }
+});
+
+watch(
+    form,
+    (newVal) => {
+        if (!isEdit.value || !originalData) {
+            formModified.value = false;
+            return;
+        }
+
+        formModified.value = Object.keys(newVal).some(
+            (key) => newVal[key] !== originalData[key]
+        );
+    },
+    { deep: true }
+);
+
+function fResetForm() {
+    if (isEdit.value && originalData) {
+        Object.keys(originalData).forEach((key) => {
+            form[key] = originalData[key] ?? "";
+        });
+    } else {
+        form.reset();
+    }
+
+    formModified.value = false;
 }
 
 function fValidaRequestForm() {
     const camposObrigatorios = {
-        identification: "Identificação",
         cnpj: "CNPJ",
+        identification: "Identificação",
         email: "E-mail",
         phone: "Telefone",
     };
@@ -362,15 +446,18 @@ function fValidaRequestForm() {
 
     const erros = [];
 
-    // Verifica campos obrigatórios padrão
     for (const [campo, nomeCampo] of Object.entries(camposObrigatorios)) {
         const valor = form[campo];
         if (!valor || typeof valor !== "string" || valor.trim() === "") {
-            erros.push(`O campo "${nomeCampo}" é obrigatório.`);
+            erros.push(`O campo ${nomeCampo} é obrigatório.`);
+        } else if (campo === "cnpj") {
+            const cleanCnpj = valor.replace(/[^\d]/g, "");
+            if (!fValidaCnpj(cleanCnpj)) {
+                erros.push(`O CNPJ informado é inválido.`);
+            }
         }
     }
 
-    // Verifica se algum campo de endereço foi preenchido
     const algumEnderecoPreenchido = Object.keys(camposEndereco).some(
         (campo) => {
             const valor = form[campo];
@@ -378,43 +465,28 @@ function fValidaRequestForm() {
         }
     );
 
-    // Se um campo de endereço foi preenchido, todos viram obrigatórios
     if (algumEnderecoPreenchido) {
         for (const [campo, nomeCampo] of Object.entries(camposEndereco)) {
             const valor = form[campo];
             if (!valor || valor.toString().trim() === "") {
                 erros.push(
-                    `O campo "${nomeCampo}" é obrigatório se o endereço for informado.`
+                    `O campo ${nomeCampo} é obrigatório se o endereço for informado.`
                 );
             }
         }
     }
 
     if (erros.length > 0) {
-        mostrarToast(erros[0]);
+        fShowToast(erros[0], "error", "top-center", 4000, "xl");
         return false;
     }
 
     return true;
 }
 
-function submit() {
-    if (!fValidaRequestForm()) {
-        return;
-    }
-
-    if (props.isEdit && data.id) {
-        form.post(`/profile-mei/${data.id}/update`, {
-            method: "put",
-            forceFormData: true,
-        });
-    } else {
-        form.post("/profile-mei/store");
-    }
-}
 const previewImage = ref(null);
 
-const handleImageUpload = (event) => {
+const fHandleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
         form.profile_photo = file;
@@ -430,6 +502,14 @@ const handleImageUpload = (event) => {
 const { buscarEnderecoPorCep } = useCepService();
 
 const fBuscarCEP = async () => {
+    fShowToast(
+        "Realizando a busca de endereço por CEP!",
+        "info",
+        "center",
+        10000,
+        "xl"
+    );
+
     try {
         if (!form.zip_code || form.zip_code.replace(/\D/g, "").length !== 8) {
             throw new Error("CEP inválido ou incompleto");
@@ -437,43 +517,119 @@ const fBuscarCEP = async () => {
 
         const endereco = await buscarEnderecoPorCep(form.zip_code);
 
-        // Atualiza os campos do formulário
         form.street = endereco.street;
         form.district = endereco.district;
         form.city = endereco.city;
         form.state = endereco.state;
         form.complement = endereco.complement;
+
+        fShowToast(
+            "Endereço encontrado com sucesso!",
+            "success",
+            "center",
+            1000
+        );
     } catch (error) {
-        console.error("Erro ao buscar CEP:", error.message);
-        // Você pode adicionar uma notificação de erro aqui se quiser
+        fShowToast(error.message, "error", "center", 4000, "xl");
     }
 };
 
-// Validação automática quando o CNPJ estiver completo
-// Estados do CNPJ
-const cnpjState = ref("empty"); // 'empty', 'valid', 'invalid', 'incomplete'
-const cnpjErrorMessage = ref("");
+const mask = "00.000.000/0000-00";
+const cnpjState = ref("incomplete");
 
-// Validação em tempo real
-function validateCnpjLive() {
-    let cleanCnpj = form.cnpj?.replace(/[^\d]+/g, "") || "";
+async function fValidateCNPJLivre() {
+    await nextTick();
 
-    if (cleanCnpj.length === 0) {
-        cnpjState.value = "empty";
+    const cleanCnpj = form.cnpj?.replace(/[^\d]+/g, "") || "";
+
+    if (!cleanCnpj) {
+        cnpjState.value = "incomplete";
         return;
     }
 
     if (cleanCnpj.length < 14) {
         cnpjState.value = "incomplete";
-        cnpjErrorMessage.value = "CNPJ incompleto";
         return;
     }
 
-    if (fValidaCNPJ(cleanCnpj)) {
-        cnpjState.value = "valid";
+    cnpjState.value = fValidaCnpj(cleanCnpj) ? "valid" : "invalid";
+}
+
+function fSubmit() {
+    if (!fValidaRequestForm()) {
+        return;
+    }
+
+    if (props.isEdit && data.id) {
+        form.post(`/profile-mei/${data.id}/update`, {
+            method: "put",
+            forceFormData: true,
+            onSuccess: () => {
+                fShowToast(
+                    "Perfil MEI atualizado com sucesso!.",
+                    "info",
+                    "center",
+                    1000,
+                    "xl"
+                );
+                setTimeout(() => {
+                    router.visit("/perfil-mei");
+                }, 1000);
+            },
+            onError: (errorsResponse) => {
+                const fieldKeys = Object.keys(errorsResponse);
+                if (fieldKeys.length > 0) {
+                    const firstErrorKey = fieldKeys[0];
+                    const errorArray = errorsResponse[firstErrorKey];
+                    const errorMessage = Array.isArray(errorArray)
+                        ? errorArray[0]
+                        : errorArray;
+                    fShowToast(errorMessage, "error", "center", 1000, "xl");
+                } else {
+                    fShowToast(
+                        "Ocorreu um erro inesperado no servidor.",
+                        "info",
+                        "center",
+                        1000,
+                        "xl"
+                    );
+                }
+            },
+        });
     } else {
-        cnpjState.value = "invalid";
-        cnpjErrorMessage.value = "CNPJ inválido";
+        form.post(`/profile-mei/store`, {
+            onSuccess: () => {
+                fShowToast(
+                    "Perfil MEI salvo com sucesso!.",
+                    "info",
+                    "center",
+                    1000,
+                    "xl"
+                );
+                setTimeout(() => {
+                    router.visit("/perfil-mei");
+                }, 1000);
+            },
+            onError: (errorsResponse) => {
+                const fieldKeys = Object.keys(errorsResponse);
+                if (fieldKeys.length > 0) {
+                    const firstErrorKey = fieldKeys[0];
+                    const errorArray = errorsResponse[firstErrorKey];
+                    const errorMessage = Array.isArray(errorArray)
+                        ? errorArray[0]
+                        : errorArray;
+                    fShowToast(errorMessage, "error", "center", 1000, "xl");
+                } else {
+                    fShowToast(
+                        "Ocorreu um erro inesperado no servidor.",
+                        "info",
+                        "center",
+                        1000,
+                        "xl"
+                    );
+                }
+            },
+        });
     }
 }
 </script>

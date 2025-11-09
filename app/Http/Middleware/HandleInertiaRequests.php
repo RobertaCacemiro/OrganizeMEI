@@ -35,15 +35,20 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+        $mei = $user?->meiProfile()->first(); // pega o primeiro MEI vinculado
+
         return array_merge(parent::share($request), [
             'auth' => [
-                'user' => $request->user() ? [
-                    'id' => $request->user()->id,
-                    'name' => $request->user()->name,
-                    'email' => $request->user()->email,
-                    'type' => session('type'),
-                    'access' => session('access'),
-                    'mei_id' => session('mei_id'),
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'type' => $user->type,
+                    'access' => $user->access_permission,
+                    'mei_id' => $mei?->id,
+                    'cnpj' => $mei?->cnpj,
+                    'profile_photo' => $mei?->profile_photo,
                 ] : null,
             ],
         ]);
