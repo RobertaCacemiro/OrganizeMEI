@@ -7,7 +7,7 @@ const props = defineProps({
     id: { type: [Number, String], required: false },
     cancelButtonText: { type: String, default: "Cancelar" },
     confirmButtonText: { type: String, default: "Confirmar" },
-    cancelButtonColor: { type: String, default: "bg-gray-300 text-black" },
+    cancelButtonColor: { type: String, default: "bg-[#3DA700] text-white" },
     confirmButtonColor: { type: String, default: "bg-red-500 text-white" },
 });
 

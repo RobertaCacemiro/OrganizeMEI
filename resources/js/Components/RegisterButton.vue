@@ -1,6 +1,5 @@
 <script setup>
-import { ref } from "vue";
-import { watch } from "vue";
+import { ref, watch } from "vue";
 
 const emit = defineEmits(["close", "refresh"]);
 

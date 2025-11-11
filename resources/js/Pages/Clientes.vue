@@ -18,8 +18,8 @@
                             placeholder: 'CPF/CNPJ:',
                             type: 'mask',
                             mask: [
-                                { mask: '000.000.000-00' }, // CPF
-                                { mask: '00.000.000/0000-00' }, // CNPJ
+                                { mask: '000.000.000-00' },
+                                { mask: '00.000.000/0000-00' },
                             ],
                         },
                         { name: 'email', placeholder: 'E-mail:' },
@@ -44,6 +44,14 @@
                 />
             </div>
         </div>
+
+        <Toast
+            v-if="showToast"
+            :message="toastMessage"
+            :type="toastType"
+            position="center"
+            size="lg"
+        />
     </Sidebar>
 </template>
 <script setup>
@@ -58,6 +66,7 @@ import FiltroTabela from "../Components/FiltroTabela.vue";
 import RegisterButton from "../Components/RegisterButton.vue";
 import FormCliente from "../Components/FormCliente.vue";
 import ConfirmAction from "../Components/ConfirmAction.vue";
+import Toast from "@/Components/Toast.vue";
 
 const props = defineProps({
     data: {
@@ -91,9 +100,33 @@ const colunas = [
 ];
 
 const actions = [
-    { icon: "Pencil", color: "blue-800", label: "Editar registro", onClick: fEditar },
-    { icon: "Trash2", color: "red-800", label: "Excluir registro", onClick: fAbrirConfirmacao },
+    {
+        icon: "Pencil",
+        color: "blue-800",
+        label: "Editar registro",
+        onClick: fEditar,
+    },
+    {
+        icon: "Trash2",
+        color: "red-800",
+        label: "Excluir registro",
+        onClick: fAbrirConfirmacao,
+    },
 ];
+
+const toastMessage = ref("");
+const toastType = ref("info");
+const showToast = ref(false);
+
+function fShowToast(message, type) {
+    toastMessage.value = message;
+    toastType.value = type;
+    showToast.value = true;
+
+    setTimeout(() => {
+        showToast.value = false;
+    }, 3000); // 3 segundos
+}
 
 const form = useForm({
     name: props.filters?.name || "",
@@ -123,6 +156,26 @@ function fAbrirConfirmacao(id) {
 function fExcluir(id) {
     form.delete(`/clientes/${id}`, {
         preserveScroll: true,
+        onSuccess: () => {
+            fShowToast("Cliente excluido com sucesso!.", "success");
+        },
+        onError: (errorsResponse) => {
+            let errorMessage = "Ocorreu um erro inesperado no servidor.";
+
+            if (errorsResponse.client_delete) {
+                errorMessage = errorsResponse.client_delete;
+            } else {
+                const fieldKeys = Object.keys(errorsResponse);
+                if (fieldKeys.length > 0) {
+                    const firstErrorKey = fieldKeys[0];
+                    errorMessage = Array.isArray(errorsResponse[firstErrorKey])
+                        ? errorsResponse[firstErrorKey][0]
+                        : errorsResponse[firstErrorKey];
+                }
+            }
+
+            fShowToast(errorMessage, "error");
+        },
     });
 }
 

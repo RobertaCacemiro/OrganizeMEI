@@ -1,17 +1,16 @@
 <template>
-    <teleport to="body">
-        <div
-            v-if="visible"
-            :class="[
-                'fixed z-[9999] px-4 py-2 rounded shadow-lg transition-opacity duration-500',
-                bgColor,
-                sizeClass,
-            ]"
-            :style="positionStyle"
-        >
-            {{ message }}
-        </div>
-    </teleport>
+    <div
+        v-if="visible"
+        :class="[
+            'fixed z-[9999] px-4 py-2 rounded shadow-lg transition-opacity duration-500',
+            bgColor,
+            sizeClass,
+        ]"
+        :style="positionStyle"
+    >
+        <!-- {{ message }} -->
+        <span v-html="message"></span>
+    </div>
 </template>
 
 <script setup>
