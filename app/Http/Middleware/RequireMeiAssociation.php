@@ -17,7 +17,7 @@ class RequireMeiAssociation
     protected $except = [
         'login',
         'register',
-        'comprovante.',
+        'comprovante',
     ];
 
     /**
