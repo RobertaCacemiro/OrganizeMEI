@@ -6,13 +6,23 @@
         <div
             class="bg-white p-6 shadow-xl rounded-xl w-full max-w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl max-h-[90vh] flex flex-col"
         >
-            <!-- SEÇÃO DO HEADER (ATUALIZADA PARA SER MAIS COMPACTA) -->
             <div class="pb-3 mb-3 border-b border-gray-200">
                 <h2 class="text-xl font-bold text-gray-800">CHAVES PIX</h2>
             </div>
 
-            <!-- FIM SEÇÃO DO HEADER -->
+            <div class="overflow-x-auto">
+                <div class="flex justify-end items-center pb-3">
+                    <RegisterButton
+                        ref="registerButtonRef"
+                        :nomenclature="'ADICIONAR CHAVE'"
+                        :form="FormKeyPix"
+                        :data="registroSelecionado"
+                        @refresh="fCarregaTable"
+                    />
+                </div>
+            </div>
 
+            <!-- FIM SEÇÃO DO HEADER -->
             <div v-if="loading" class="text-gray-500 text-center py-8">
                 <svg
                     class="animate-spin h-5 w-5 text-[#3DA700] mx-auto"
@@ -37,7 +47,10 @@
                 <p class="mt-2 text-sm">Carregando..</p>
             </div>
 
-            <div v-else-if="dados.data.length" class="overflow-x-auto">
+            <div
+                v-else-if="dados.data.length && !loading"
+                class="overflow-x-auto"
+            >
                 <div class="flex justify-end items-center pb-3">
                     <RegisterButton
                         ref="registerButtonRef"

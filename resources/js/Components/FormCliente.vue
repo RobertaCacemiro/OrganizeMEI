@@ -1,7 +1,7 @@
 <template>
     <form
         @submit.prevent="fSubmit"
-        class="p-4 rounded-xl bg-white w-full max-w-10xl mx-auto"
+        class="p-4 md:p-6 rounded-xl bg-white w-full max-w-4xl mx-auto max-h-[90vh] overflow-y-auto md:max-h-none md:overflow-visible"
     >
         <!-- Título e botão de fechar -->
         <div class="relative mb-6 text-center">
@@ -31,7 +31,11 @@
                         v-bind="isEditing ? { readonly: true } : {}"
                         class="input input-bordered w-full border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3DA700]"
                         placeholder="00.000.000/0000-00"
-                        @blur="() => { if (!isEditing) fValidarCpfCnpj() }"
+                        @blur="
+                            () => {
+                                if (!isEditing) fValidarCpfCnpj();
+                            }
+                        "
                         required
                     />
 
@@ -330,7 +334,7 @@ const toastMessage = ref("");
 const toastType = ref("info");
 const showToast = ref(false);
 
-const { fBuscaEnderecoCEP } = useCepService();
+const { buscarEnderecoPorCep } = useCepService();
 
 // Valida CNPJ/CPF
 function fValidarCpfCnpj() {
@@ -351,31 +355,28 @@ function fValidarCpfCnpj() {
     }
 }
 
-// 🔹 Watch para preencher dados quando editar
 watch(
     () => props.data,
     (editValue) => {
         formData.value = editValue;
 
-        if (formData.value?.id) {
-            console.log("teste");
-        }
-
         if (editValue && Object.keys(editValue).length > 0) {
-            form.cpf_cnpj = editValue.cpf_cnpj;
-            form.name = editValue.name;
-            form.email = editValue.email;
-            form.phone = editValue.phone;
-            form.notes = editValue.observacao;
+            form.cpf_cnpj = editValue.cpf_cnpj
+                ? String(editValue.cpf_cnpj)
+                : "";
+            form.name = editValue.name || "";
+            form.email = editValue.email || "";
+            form.phone = editValue.phone || "";
+            form.notes = editValue.observacao || "";
 
             // Endereço
-            form.street = editValue.street;
-            form.number = editValue.number;
-            form.complement = editValue.complement;
-            form.district = editValue.district;
-            form.city = editValue.city;
-            form.state = editValue.state;
-            form.zip_code = editValue.zip_code;
+            form.street = editValue.street || "";
+            form.number = editValue.number || "";
+            form.complement = editValue.complement || "";
+            form.district = editValue.district || "";
+            form.city = editValue.city || "";
+            form.state = editValue.state || "";
+            form.zip_code = editValue.zip_code || "";
         }
     },
     { immediate: true }
@@ -401,12 +402,14 @@ watch(
 
 // Busca endereço pelo CEP
 const fBuscarCEP = async () => {
+    fShowToast("Realizando a busca de endereço por CEP!", "info");
+
     try {
         if (!form.zip_code || form.zip_code.replace(/\D/g, "").length !== 8) {
             throw new Error("CEP inválido ou incompleto");
         }
 
-        const endereco = await fBuscaEnderecoCEP(form.zip_code);
+        const endereco = await buscarEnderecoPorCep(form.zip_code);
 
         // Atualiza os campos do formulário
         form.street = endereco.street;
@@ -414,11 +417,22 @@ const fBuscarCEP = async () => {
         form.city = endereco.city;
         form.state = endereco.state;
         form.complement = endereco.complement;
+
+        fShowToast("Endereço encontrado com sucesso!", "success");
     } catch (error) {
-        console.error("Erro ao buscar CEP:", error.message);
-        // Você pode adicionar uma notificação de erro aqui se quiser
+        fShowToast(error.message, "error");
     }
 };
+
+function fShowToast(message, type) {
+    toastMessage.value = message;
+    toastType.value = type;
+    showToast.value = true;
+
+    setTimeout(() => {
+        showToast.value = false;
+    }, 3000);
+}
 
 // Cancelar formulário
 function fHandleCancel() {
@@ -426,19 +440,125 @@ function fHandleCancel() {
     emit("close");
 }
 
-// Submete o formulário
+function fValidaRequestForm() {
+    const camposObrigatorios = {
+        cpf_cnpj: "CNPJ/CPF",
+        name: "Nome",
+        email: "E-mail",
+    };
+
+    const camposEndereco = {
+        street: "Rua",
+        number: "Número",
+        complement: "Complemento",
+        district: "Bairro",
+        city: "Cidade",
+        state: "Estado",
+        zip_code: "CEP",
+    };
+
+    const erros = [];
+
+    for (const [campo, nomeCampo] of Object.entries(camposObrigatorios)) {
+        const valor = form[campo];
+        if (!valor || typeof valor !== "string" || valor.trim() === "") {
+            erros.push(`O campo *${nomeCampo} é obrigatório.`);
+        } else if (campo === "cnpj") {
+            const cleanCnpj = valor.replace(/[^\d]/g, "");
+            if (!fValidaCnpj(cleanCnpj)) {
+                erros.push(`O CNPJ informado é inválido.`);
+            }
+        }
+    }
+
+    const algumEnderecoPreenchido = Object.keys(camposEndereco).some(
+        (campo) => {
+            const valor = form[campo];
+            return valor && valor.toString().trim() !== "";
+        }
+    );
+
+    if (algumEnderecoPreenchido) {
+        for (const [campo, nomeCampo] of Object.entries(camposEndereco)) {
+            const valor = form[campo];
+            if (!valor || valor.toString().trim() === "") {
+                erros.push(
+                    `O campo *${nomeCampo} é obrigatório se o endereço for informado.`
+                );
+            }
+        }
+    }
+
+    if (erros.length > 0) {
+        fShowToast(erros[0], "info");
+        return false;
+    }
+
+    return true;
+}
+
 function fSubmit() {
-    if (!fValidarCpfCnpj()) return; // Bloqueia o submit se for inválido
+    if (!fValidaRequestForm()) {
+        return;
+    }
 
     if (formData.value.id) {
-        // update
+        // Editar
         form.post(`/clientes/${formData.value.id}/update`, {
             method: "put",
             forceFormData: true,
+            onSuccess: () => {
+                fShowToast("Cliente atualizado com sucesso!.", "info");
+                setTimeout(() => {
+                    fHandleCancel();
+                }, 1000);
+            },
+            onError: (errorsResponse) => {
+                const fieldKeys = Object.keys(errorsResponse);
+                if (fieldKeys.length > 0) {
+                    const firstErrorKey = fieldKeys[0];
+                    const errorArray = errorsResponse[firstErrorKey];
+                    const errorMessage = Array.isArray(errorArray)
+                        ? errorArray[0]
+                        : errorArray;
+                    fShowToast(errorMessage, "error");
+                } else {
+                    fShowToast(
+                        "Ocorreu um erro inesperado no servidor.",
+                        "info"
+                    );
+                }
+            },
         });
     } else {
-        // insert
-        form.post("/clientes/store");
+        // Cadastrar
+        form.post("/clientes/store", {
+            method: "put",
+            forceFormData: true,
+            onSuccess: () => {
+                fShowToast("Cliente cadastrado com sucesso!.", "info");
+                setTimeout(() => {
+                    fHandleCancel();
+                    // router.visit("/clientes");
+                }, 1000);
+            },
+            onError: (errorsResponse) => {
+                const fieldKeys = Object.keys(errorsResponse);
+                if (fieldKeys.length > 0) {
+                    const firstErrorKey = fieldKeys[0];
+                    const errorArray = errorsResponse[firstErrorKey];
+                    const errorMessage = Array.isArray(errorArray)
+                        ? errorArray[0]
+                        : errorArray;
+                    fShowToast(errorMessage, "error");
+                } else {
+                    fShowToast(
+                        "Ocorreu um erro inesperado no servidor.",
+                        "error"
+                    );
+                }
+            },
+        });
     }
 }
 </script>

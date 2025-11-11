@@ -7,6 +7,7 @@
                     v-if="campo.type === 'mask'"
                     v-model="form[campo.name]"
                     :mask="campo.mask"
+                    :lazy="false"
                     :placeholder="campo.placeholder"
                     class="input input-bordered w-full border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3DA700]"
                 />
@@ -29,7 +30,7 @@
                     </option>
                 </select>
 
-                <!-- Campo do tipo date (placeholder visível) -->
+                <!-- Campo do tipo date -->
                 <input
                     v-else-if="campo.type === 'date'"
                     type="text"
@@ -55,11 +56,11 @@
             </div>
         </template>
 
-        <!-- Botão submit -->
+        <!-- Botões -->
         <div class="w-full md:w-auto flex flex-col md:flex-row gap-2">
             <button
                 type="submit"
-                class="btn bg-[#3DA700] text-white min-w-[120px] w-full md:w-auto rounded-lg collapse-arrow"
+                class="btn bg-[#3DA700] text-white min-w-[120px] w-full md:w-auto rounded-lg"
             >
                 BUSCAR
             </button>
@@ -77,7 +78,7 @@
 
 <script setup>
 import { reactive } from "vue";
-import { IMaskComponent } from "vue-imask";
+import { IMaskComponent } from "vue-imask"; // ✅ Import corrigido
 
 const emit = defineEmits(["submit"]);
 
@@ -88,12 +89,13 @@ const props = defineProps({
     },
     definedValues: {
         type: Object,
-        required: false,
+        default: () => ({}),
     },
 });
 
 const form = reactive({});
 
+// Inicializa os valores
 props.campos.forEach((campo) => {
     form[campo.name] = props.definedValues?.[campo.name] || "";
 });
@@ -103,10 +105,7 @@ function fAplicarFiltro() {
 }
 
 function fLimpaFiltros() {
-    props.campos.forEach((campo) => {
-        form[campo.name] = "";
-    });
-
+    props.campos.forEach((campo) => (form[campo.name] = ""));
     emit("submit", { ...form });
 }
 </script>
