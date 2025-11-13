@@ -11,7 +11,8 @@ export function fFormatDate(dateStr) {
 
 export function fGetCategoriaId(categoriaAtual, categories) {
     const categoriaAchada = categories.find((c) => c.name === categoriaAtual);
-    return categoriaAchada.id || "Não definido";
+    // return categoriaAchada.id || "Não definido";
+    return categoriaAchada.id ? Number(categoriaAchada.id) : 0;
 }
 
 // Função para mostrar o toast
@@ -37,7 +38,9 @@ export function fShowToast(
 
             if (ies_model && type === "success") {
                 if (Array.isArray(fFunctionAction)) {
-                    fFunctionAction.forEach(fn => typeof fn === "function" && fn());
+                    fFunctionAction.forEach(
+                        (fn) => typeof fn === "function" && fn()
+                    );
                 } else if (typeof fFunctionAction === "function") {
                     fFunctionAction();
                 }
@@ -48,5 +51,3 @@ export function fShowToast(
         }, duration);
     });
 }
-
-

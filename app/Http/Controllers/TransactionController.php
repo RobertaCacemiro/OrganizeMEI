@@ -10,8 +10,10 @@ use App\Models\Category;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
+use Illuminate\Validation\ValidationException;
+use Exception;
 
+use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 class TransactionController extends Controller
 {
@@ -93,8 +95,8 @@ class TransactionController extends Controller
             ->where('mei_id', $meiId);
 
         // Somar receitas e despesas
-        $totalReceitas = (clone $query)->where('type', 1)->sum('amount');
-        $totalDespesas = (clone $query)->where('type', 2)->sum('amount');
+        $totalReceitas = (clone $query)->where('type', 2)->sum('amount');
+        $totalDespesas = (clone $query)->where('type', 1)->sum('amount');
 
         // Calcular saldo
         $saldo = $totalReceitas - $totalDespesas;
@@ -108,27 +110,33 @@ class TransactionController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'category_id' => 'nullable|exists:categories,id',
-            'transaction_date' => 'required|date',
-            'amount' => 'required|numeric|min:0',
-            'type' => 'required|in:1,2',
-            'description' => 'nullable|string|max:255',
-            'observation' => 'nullable|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'category_id' => 'nullable|exists:categories,id',
+                'transaction_date' => 'required|date',
+                'amount' => 'required|numeric|min:0',
+                'type' => 'required|in:1,2',
+                'description' => 'nullable|string|max:255',
+                'observation' => 'nullable|string',
+            ]);
 
-        $transaction = Transaction::create([
-            'user_id' => auth()->id(), // pega o ID do usuário logado
-            'mei_id' => session('mei_id'),
-            'category_id' => $validated['category_id'] ?? null,
-            'transaction_date' => $validated['transaction_date'],
-            'amount' => $validated['amount'],
-            'type' => $validated['type'],
-            'description' => $validated['description'] ?? null,
-            'observation' => $validated['observation'] ?? null,
-        ]);
+            $transaction = Transaction::create([
+                'user_id' => auth()->id(), // pega o ID do usuário logado
+                'mei_id' => session('mei_id'),
+                'category_id' => $validated['category_id'] ?? null,
+                'transaction_date' => $validated['transaction_date'],
+                'amount' => $validated['amount'],
+                'type' => $validated['type'],
+                'description' => $validated['description'] ?? null,
+                'observation' => $validated['observation'] ?? null,
+            ]);
 
-        return Inertia::location(route('financeiro.index'));
+            return redirect()->back()->with('success', 'Registro financeiro salvo com sucesso!');
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (Exception $e) {
+            return redirect()->back()->with('error', 'Ocorreu um erro ao salvar registro financeiro: ' . $e->getMessage());
+        }
 
     }
 

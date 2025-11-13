@@ -463,10 +463,10 @@ function fValidaRequestForm() {
         const valor = form[campo];
         if (!valor || typeof valor !== "string" || valor.trim() === "") {
             erros.push(`O campo *${nomeCampo} é obrigatório.`);
-        } else if (campo === "cnpj") {
+        } else if (campo === "cpf_cnpj") {
             const cleanCnpj = valor.replace(/[^\d]/g, "");
-            if (!fValidaCnpj(cleanCnpj)) {
-                erros.push(`O CNPJ informado é inválido.`);
+            if (!fValidarCpfCnpj(cleanCnpj)) {
+                erros.push(`O CNPJ/CPF informado é inválido.`);
             }
         }
     }
@@ -483,14 +483,14 @@ function fValidaRequestForm() {
             const valor = form[campo];
             if (!valor || valor.toString().trim() === "") {
                 erros.push(
-                    `O campo *${nomeCampo} é obrigatório se o endereço for informado.`
+                    `O campo *${nomeCampo} é obrigatório para completar o endereço.`
                 );
             }
         }
     }
 
     if (erros.length > 0) {
-        fShowToast(erros[0], "info");
+        fShowToast(erros[0], "error");
         return false;
     }
 

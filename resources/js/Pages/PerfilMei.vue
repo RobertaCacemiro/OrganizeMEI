@@ -470,7 +470,7 @@ function fValidaRequestForm() {
             const valor = form[campo];
             if (!valor || valor.toString().trim() === "") {
                 erros.push(
-                    `O campo ${nomeCampo} é obrigatório se o endereço for informado.`
+                    `O campo ${nomeCampo} é obrigatório para completar o endereço.`
                 );
             }
         }
