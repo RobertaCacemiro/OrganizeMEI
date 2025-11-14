@@ -533,8 +533,6 @@ function fSubmit() {
     } else {
         // Cadastrar
         form.post("/clientes/store", {
-            method: "put",
-            forceFormData: true,
             onSuccess: () => {
                 fShowToast("Cliente cadastrado com sucesso!.", "info");
                 setTimeout(() => {

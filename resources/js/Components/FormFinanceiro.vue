@@ -30,26 +30,11 @@
                         Valor
                         <span class="text-red-500 -ml-2">*</span>
                     </legend>
-                    <!-- <input
+                    <money3
                         v-model="form.amount"
-                        type="text"
+                        v-bind="moneyConfig"
                         class="input input-bordered w-full border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3DA700]"
-                        placeholder="R$ 0,00"
-                        required
-                    /> -->
-                    <IMaskComponent
-                        v-model="form.amount_display"
-                        :mask="{
-                            mask: Number,
-                            scale: 2,
-                            thousandsSeparator: '.',
-                            radix: ',',
-                            padFractionalZeros: true,
-                            normalizeZeros: true,
-                        }"
-                        placeholder="R$ 0,00"
-                        class="input input-bordered w-full border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3DA700]"
-                        required
+                        placeholder="0,00"
                     />
                 </fieldset>
             </div>
@@ -118,7 +103,7 @@
             <fieldset class="fieldset">
                 <legend class="fieldset-legend text-base">
                     Descrição
-                    <!-- <span class="text-red-500 -ml-2">*</span> -->
+                    <span class="text-red-500 -ml-2">*</span>
                 </legend>
                 <input
                     v-model="form.description"
@@ -200,16 +185,46 @@ const showToast = ref(false);
 const toastMessage = ref("");
 const toastType = ref("error");
 
+function fShowToast(message, type) {
+    toastMessage.value = message;
+    toastType.value = type;
+    showToast.value = true;
+
+    setTimeout(() => {
+        showToast.value = false;
+    }, 3000);
+}
+
 // Filtros
 const form = useForm({
     transaction_date: new Date().toISOString().split("T")[0],
-    amount: null,
+    amount: 0.0,
     amount_display: "",
     type: 2,
     category_id: 0,
     description: null,
     observation: null,
 });
+
+const moneyConfig = {
+    prefix: "",
+    suffix: "",
+    thousands: ".",
+    decimal: ",",
+    precision: 2,
+    masked: false,
+};
+
+watch(
+    () => form.amount_display,
+    (val) => {
+        if (!val) form.amount = 0;
+        else {
+            const num = parseFloat(val.replace(/\./g, "").replace(",", "."));
+            form.amount = isNaN(num) ? 0 : num;
+        }
+    }
+);
 
 const emit = defineEmits(["close"]);
 
@@ -227,14 +242,13 @@ watch(
     () => props.data,
     (editValue) => {
         formData.value = editValue;
-        console.log("Fomr", formData.value);
 
         if (editValue && Object.keys(editValue).length > 0) {
             form.transaction_date =
                 fFormatDate(editValue.date) ||
                 new Date().toISOString().split("T")[0];
-            form.amount_display = editValue.valor || null;
-            form.type = editValue.type == "Despesa" ? 2 : 1 || null;
+            form.amount = editValue.valor || null;
+            form.type = editValue.tipo === "Receita" ? 2 : 1;
             form.category_id =
                 fGetCategoriaId(editValue.category, categories) || null;
             form.description = editValue.descricao || null;
@@ -246,30 +260,107 @@ watch(
     { immediate: true }
 );
 
+function fValidaRequestForm() {
+    const camposObrigatorios = {
+        transaction_date: "Data",
+        amount: "Valor",
+        category_id: "Categoria",
+        description: "Descrição",
+    };
+
+    const erros = [];
+
+    for (const [campo, nomeCampo] of Object.entries(camposObrigatorios)) {
+        const valor = form[campo];
+
+        if (
+            valor === null ||
+            valor === undefined ||
+            (typeof valor === "string" &&
+                (valor.trim() === "" || valor.trim() === "0.00")) ||
+            (typeof valor === "number" && valor === 0)
+        ) {
+            erros.push(`O campo *${nomeCampo} é obrigatório.`);
+        }
+    }
+
+    if (erros.length > 0) {
+        fShowToast(erros[0], "error");
+        return false;
+    }
+
+    return true;
+}
+
 function fSubmit() {
-    if (!form.amount_display) return;
-
-    // converte string para número
-    const numericValue = form.amount_display
-        .replace(/\./g, "")
-        .replace(",", ".");
-
-    if (!form.category_id || form.category_id === 0) {
-        toastMessage.value = "Por favor, selecione uma categoria.";
-        toastType.value = "error";
-        showToast.value = true;
-        setTimeout(() => (showToast.value = false), 3000);
+    if (!fValidaRequestForm()) {
         return;
     }
 
-    form.amount = parseFloat(numericValue);
     if (formData.value.id) {
+        // Editar
         form.post(`/financeiro/${formData.value.id}/update`, {
             method: "put",
             forceFormData: true,
+            onSuccess: () => {
+                fShowToast(
+                    "Registro financeiro atualizado com sucesso!.",
+                    "info"
+                );
+
+                setTimeout(() => {
+                    fHandleCancel();
+                    window.location.href = window.location.href;
+                }, 1000);
+            },
+            onError: (errorsResponse) => {
+                const fieldKeys = Object.keys(errorsResponse);
+                if (fieldKeys.length > 0) {
+                    const firstErrorKey = fieldKeys[0];
+                    const errorArray = errorsResponse[firstErrorKey];
+                    const errorMessage = Array.isArray(errorArray)
+                        ? errorArray[0]
+                        : errorArray;
+                    fShowToast(errorMessage, "error");
+                } else {
+                    fShowToast(
+                        "Ocorreu um erro inesperado no servidor.",
+                        "info"
+                    );
+                }
+            },
         });
     } else {
-        form.post("/financeiro/store");
+        // Cadastrar
+        form.post("/financeiro/store", {
+            onSuccess: () => {
+                fShowToast(
+                    "Registro financeiro cadastrado com sucesso!.",
+                    "info"
+                );
+
+                setTimeout(() => {
+                    fHandleCancel();
+                    window.location.reload();
+                }, 1000);
+            },
+            onError: (errorsResponse) => {
+                const fieldKeys = Object.keys(errorsResponse);
+                if (fieldKeys.length > 0) {
+                    const firstErrorKey = fieldKeys[0];
+                    const errorArray = errorsResponse[firstErrorKey];
+                    const errorMessage = Array.isArray(errorArray)
+                        ? errorArray[0]
+                        : errorArray;
+                    fShowToast(errorMessage, "error");
+                } else {
+                    fShowToast(
+                        "Ocorreu um erro inesperado no servidor.",
+                        "error"
+                    );
+                }
+            },
+        });
     }
 }
 </script>

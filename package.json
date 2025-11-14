@@ -21,7 +21,9 @@
         "lucide-vue-next": "^0.511.0",
         "maska": "^3.1.1",
         "qrcode.vue": "^3.6.0",
+        "v-money3": "^3.24.1",
         "vue": "^3.5.13",
-        "vue-imask": "^7.6.1"
+        "vue-imask": "^7.6.1",
+        "vuejs-money": "^1.0.6"
     }
 }
