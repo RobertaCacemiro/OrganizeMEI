@@ -61,6 +61,14 @@
                 />
             </div>
         </div>
+
+        <Toast
+            v-if="showToast"
+            :message="toastMessage"
+            :type="toastType"
+            position="center"
+            size="lg"
+        />
     </Sidebar>
 </template>
 
@@ -72,6 +80,7 @@ import FiltroTabela from "../Components/FiltroTabela.vue";
 import RegisterButton from "../Components/RegisterButton.vue";
 import FormFinanceiro from "../Components/FormFinanceiro.vue";
 import ConfirmAction from "../Components/ConfirmAction.vue";
+import Toast from "@/Components/Toast.vue";
 
 import Sidebar from "@/Components/Sidebar.vue";
 import Table from "@/Components/Table.vue";
@@ -125,6 +134,7 @@ if (Array.isArray(categories.value)) {
 }
 
 const colunas = [
+    { label: "CÓDIGO", key: "id" },
     { label: "DATA", key: "date" },
     { label: "DESCRIÇÃO", key: "descricao" },
     { label: "CATEGORIA", key: "category" },
@@ -134,8 +144,18 @@ const colunas = [
 ];
 
 const actions = [
-    { icon: "Pencil", color: "blue-800", label: "Editar registro", onClick: fEditar },
-    { icon: "Trash2", color: "red-800", label: "Excluir registro", onClick: fAbrirConfirmacao },
+    {
+        icon: "Pencil",
+        color: "blue-800",
+        label: "Editar registro",
+        onClick: fEditar,
+    },
+    {
+        icon: "Trash2",
+        color: "red-800",
+        label: "Excluir registro",
+        onClick: fAbrirConfirmacao,
+    },
 ];
 
 const cards = [
@@ -171,6 +191,20 @@ const cards = [
     },
 ];
 
+const toastMessage = ref("");
+const toastType = ref("info");
+const showToast = ref(false);
+
+function fShowToast(message, type) {
+    toastMessage.value = message;
+    toastType.value = type;
+    showToast.value = true;
+
+    setTimeout(() => {
+        showToast.value = false;
+    }, 3000); // 3 segundos
+}
+
 let registerButtonRef = ref(null);
 let registroSelecionado = ref({});
 
@@ -193,6 +227,26 @@ function fAbrirConfirmacao(id) {
 function fExcluir(id) {
     form.delete(`/financeiro/${id}`, {
         preserveScroll: true,
+        onSuccess: () => {
+            fShowToast("Registro financeiro excluido com sucesso!.", "success");
+        },
+        onError: (errorsResponse) => {
+            let errorMessage = "Ocorreu um erro inesperado no servidor.";
+
+            if (errorsResponse.client_delete) {
+                errorMessage = errorsResponse.client_delete;
+            } else {
+                const fieldKeys = Object.keys(errorsResponse);
+                if (fieldKeys.length > 0) {
+                    const firstErrorKey = fieldKeys[0];
+                    errorMessage = Array.isArray(errorsResponse[firstErrorKey])
+                        ? errorsResponse[firstErrorKey][0]
+                        : errorsResponse[firstErrorKey];
+                }
+            }
+
+            fShowToast(errorMessage, "error");
+        },
     });
 }
 

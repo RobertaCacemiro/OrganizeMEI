@@ -73,7 +73,7 @@ class TransactionController extends Controller
                 $query->whereNull('user_id')
                     ->whereNull('mei_id');
             })
-            ->orderBy('name')
+            ->orderBy('created_at', 'desc')
             ->get();
 
         $dashboardValues = $this->getDashboardValues();
@@ -140,52 +140,58 @@ class TransactionController extends Controller
 
     }
 
-    public function edit($id)
-    {
-        $launch = Transaction::findOrFail($id);
-
-        return response()->json($launch);
-    }
-
     public function update(Request $request, $id)
     {
-        $launch = Transaction::findOrFail($id);
+        try {
+            $launch = Transaction::findOrFail($id);
 
-        // Valide os dados recebidos (opcional, mas recomendado)
-        $validated = $request->validate([
-            'category_id' => 'nullable|exists:categories,id',
-            'transaction_date' => 'required|date',
-            'amount' => 'required|numeric',
-            'type' => 'required|integer',
-            'description' => 'nullable|string|max:255',
-            'observation' => 'nullable|string',
-        ]);
+            // Valide os dados recebidos (opcional, mas recomendado)
+            $validated = $request->validate([
+                'category_id' => 'nullable|exists:categories,id',
+                'transaction_date' => 'required|date',
+                'amount' => 'required|numeric',
+                'type' => 'required|integer',
+                'description' => 'nullable|string|max:255',
+                'observation' => 'nullable|string',
+            ]);
 
-        // Atualiza o registro com os dados validados
-        $launch->update($validated);
+            // Atualiza o registro com os dados validados
+            $launch->update($validated);
 
-        // Redireciona para a rota, você pode usar redirect() também
-        return Inertia::location(route('financeiro.index'));
+            // Redireciona para a rota, você pode usar redirect() também
+            // return Inertia::location(route('financeiro.index'));
+            return redirect()->back()->with('success', 'Registro financeiro atualizado com sucesso!');
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (Exception $e) {
+            return redirect()->back()->with('error', 'Ocorreu um erro ao atualizar o registro financeiro: ' . $e->getMessage());
+        }
     }
 
     public function destroy($id)
     {
-        $launche = Transaction::findOrFail($id);
+        try {
+            $launche = Transaction::findOrFail($id);
 
-        $userId = auth()->id();
-        $meiId = session('mei_id');
+            $userId = auth()->id();
+            $meiId = session('mei_id');
 
-        if ($launche->mei_id !== $meiId) {
-            abort(403, 'Acesso negado: registro não pertence ao seu MEI.');
+            if ($launche->mei_id !== $meiId) {
+                abort(403, 'Acesso negado: registro não pertence ao seu MEI.');
+            }
+
+            if ($launche->user_id !== $userId) {
+                abort(403, 'Acesso negado: você não cadastrou essa registro.');
+            }
+
+            $launche->delete();
+
+            return redirect()->back()->with('success', 'Registro financeirto excluido com sucesso!');
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (Exception $e) {
+            return redirect()->back()->with('error', 'Ocorreu um erro ao excluir o registro financeirto: ' . $e->getMessage());
         }
-
-        if ($launche->user_id !== $userId) {
-            abort(403, 'Acesso negado: você não cadastrou essa registro.');
-        }
-
-        $launche->delete();
-
-        return Inertia::location(route('financeiro.index'));
     }
 
 }
