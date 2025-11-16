@@ -20,9 +20,11 @@ class Payment extends Model
         'due_date',
         'amount',
         'payment_date',
-        'sent',
+        'sent_at',
         'resent_by',
-        'key'
+        'key',
+        'processing_at',
+        'return_at'
     ];
 
     protected static function booted()

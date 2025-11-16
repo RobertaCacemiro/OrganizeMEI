@@ -29,10 +29,13 @@ class PaymentController extends Controller
             });
 
         $statusMap = [
+            0 => 'Erro de Envio',
             1 => 'Pendente Envio',
             2 => 'Pendente Pagamento',
-            3 => 'Pago',
+            3 => 'Pago (Cliente)',
             4 => 'Atrasado',
+            5 => 'Envio Cancelado',
+            6 => 'Pago (Usuário)',
         ];
 
         $payments = Payment::with(['client', 'charge'])

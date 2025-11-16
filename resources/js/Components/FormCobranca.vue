@@ -1,7 +1,7 @@
 <template>
     <form
         @submit.prevent="submit"
-        class="p-4 rounded-xl bg-white max-w-lg w-full"
+        class="p-4 md:p-6 rounded-xl bg-white w-full max-w-4xl mx-auto max-h-[90vh] overflow-y-auto md:max-h-none md:overflow-visible"
     >
         <!-- Título e botão de fechar -->
         <div class="relative mb-6 text-center">
@@ -17,15 +17,16 @@
                 <select
                     v-model="form.client_id"
                     class="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3DA700] text-base"
+                    :disabled="isAmountLocked"
                     required
                 >
                     <option value="" disabled hidden>Selecione</option>
                     <option
                         v-for="cliente in clients"
-                        :key="cliente.id"
-                        :value="cliente.id"
+                        :key="cliente.value"
+                        :value="cliente.value"
                     >
-                        {{ cliente.name }}
+                        {{ cliente.label }}
                     </option>
                 </select>
                 <div class="validator-hint hidden">
@@ -44,6 +45,7 @@
                     <input
                         v-model="form.due_date"
                         type="date"
+                        :disabled="isAmountLocked"
                         class="input input-bordered w-full border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3DA700]"
                         required
                     />
@@ -58,20 +60,12 @@
                         Valor
                         <span class="text-red-500 -ml-2">*</span>
                     </legend>
-                    <IMaskComponent
-                        v-model="form.amount_display"
-                        :mask="{
-                            mask: Number,
-                            scale: 2,
-                            thousandsSeparator: '.',
-                            radix: ',',
-                            padFractionalZeros: true,
-                            normalizeZeros: true,
-                        }"
-                        :unmask="false"
-                        placeholder="R$ 0,00"
+                    <money3
+                        v-model="form.amount"
+                        v-bind="moneyConfig"
+                        :disabled="isAmountLocked"
                         class="input input-bordered w-full border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3DA700]"
-                        required
+                        placeholder="0,00"
                     />
                 </fieldset>
             </div>
@@ -225,19 +219,57 @@ const emit = defineEmits(["close"]);
 
 const clients = props.adicional;
 
+const toastMessage = ref("");
+const toastType = ref("info");
+const showToast = ref(false);
+
+function fShowToast(message, type) {
+    toastMessage.value = message;
+    toastType.value = type;
+    showToast.value = true;
+
+    setTimeout(() => {
+        showToast.value = false;
+    }, 3000);
+}
+
 const formData = ref({});
 const isEditing = computed(() => !!formData.value?.id);
 
 // Formulário
 const form = useForm({
     client_id: "",
-    amount: null,
+    amount: "",
     amount_display: "",
     description: null,
-    due_date: new Date().toISOString().split("T")[0],
+    due_date: (() => {
+        const d = new Date();
+        d.setDate(d.getDate() + 1);
+        return d.toISOString().split("T")[0];
+    })(),
     payment_date: null,
     ies_send_pix: 0, // 0 ou 1
 });
+
+const moneyConfig = {
+    prefix: "",
+    suffix: "",
+    thousands: ".",
+    decimal: ",",
+    precision: 2,
+    masked: false,
+};
+
+watch(
+    () => form.amount_display,
+    (val) => {
+        if (!val) form.amount = 0;
+        else {
+            const num = parseFloat(val.replace(/\./g, "").replace(",", "."));
+            form.amount = isNaN(num) ? 0 : num;
+        }
+    }
+);
 
 // Guarda o valor original do ies_send_pix
 const originalPixValue = ref(0);
@@ -275,9 +307,7 @@ watch(
 
         if (editValue && Object.keys(editValue).length > 0) {
             form.client_id = editValue.client_id;
-            form.amount_display = Number(editValue.valor)
-                .toFixed(2)
-                .replace(".", ",");
+            form.amount = editValue.valor || null;
             form.due_date = fFormatDate(editValue.data_vencimento);
             form.payment_date = fFormatDate(editValue.data_pagamento);
             form.ies_send_pix = Number(editValue.ies_envia_pix);
@@ -292,6 +322,14 @@ watch(
     { immediate: true }
 );
 
+const isAmountLocked = computed(() => {
+    return isEditing.value && originalPixValue.value === 1;
+});
+
+// const isAmountLocked = computed(() => {
+//     return isEditing.value && Number(form.ies_send_pix) === 1;
+// });
+
 function fFechaModalAssinatura() {
     form.ies_send_pix = 0;
     premiumModal.value.close();
@@ -300,10 +338,6 @@ function fFechaModalAssinatura() {
 function fRedirecionaAssinatura() {
     window.location.href = "/upgrade";
 }
-
-const toastMessage = ref("");
-const toastType = ref("info");
-const showToast = ref(false);
 
 watch(
     () => page.props.errors,
@@ -327,20 +361,92 @@ function fHandleCancel() {
 }
 
 function submit() {
-    if (!form.amount_display) return;
-
-    const numericValue = form.amount_display
-        .replace(/\./g, "")
-        .replace(",", ".");
-    form.amount = parseFloat(numericValue);
-
     if (formData.value.id) {
+        // Editar
         form.post(`/cobrancas/${formData.value.id}/update`, {
             method: "put",
             forceFormData: true,
+            onSuccess: () => {
+                console.log("Sucesso");
+
+                fShowToast("Cobrança atualizada com sucesso!.", "info");
+
+                setTimeout(() => {
+                    fHandleCancel();
+                    window.location.reload();
+                }, 1000);
+            },
+            onError: (errorsResponse) => {
+                const fieldKeys = Object.keys(errorsResponse);
+
+                if (fieldKeys.length > 0) {
+                    const firstErrorKey = fieldKeys[0];
+                    let errorMessage = "Ocorreu um erro no processamento."; // Default
+
+                    const errorArray = errorsResponse[firstErrorKey];
+
+                    if (Array.isArray(errorArray) && errorArray.length > 0) {
+                        errorMessage = errorArray[0];
+                    } else if (
+                        typeof errorsResponse[firstErrorKey] === "object" &&
+                        errorsResponse[firstErrorKey] !== null
+                    ) {
+                        errorMessage = firstErrorKey;
+                    } else if (typeof errorArray === "string") {
+                        errorMessage = errorArray;
+                    }
+
+                    // Garante que o que vai para o fShowToast é uma String
+                    if (
+                        typeof errorMessage === "string" &&
+                        errorMessage.length > 0
+                    ) {
+                        fShowToast(errorMessage, "error");
+                    } else {
+                        // Último recurso
+                        fShowToast(
+                            "Ocorreu um erro inesperado no servidor.",
+                            "error"
+                        );
+                    }
+                } else {
+                    fShowToast(
+                        "Ocorreu um erro inesperado no servidor.",
+                        "error"
+                    );
+                }
+            },
         });
     } else {
-        form.post("/cobrancas/store");
+        // Cadastrar
+        form.post("/cobrancas/store", {
+            onSuccess: () => {
+                console.log("Sucesso");
+
+                fShowToast("Cobrança cadastrada com sucesso!.", "info");
+
+                setTimeout(() => {
+                    fHandleCancel();
+                    window.location.reload();
+                }, 1000);
+            },
+            onError: (errorsResponse) => {
+                const fieldKeys = Object.keys(errorsResponse);
+                if (fieldKeys.length > 0) {
+                    const firstErrorKey = fieldKeys[0];
+                    const errorArray = errorsResponse[firstErrorKey];
+                    const errorMessage = Array.isArray(errorArray)
+                        ? errorArray[0]
+                        : errorArray;
+                    fShowToast(errorMessage, "error");
+                } else {
+                    fShowToast(
+                        "Ocorreu um erro inesperado no servidor.",
+                        "error"
+                    );
+                }
+            },
+        });
     }
 }
 </script>
