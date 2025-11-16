@@ -15,6 +15,33 @@
                 <DashboardPages :cards="cards" />
             </div>
 
+            <div>
+                <FiltroTabela
+                    :campos="[
+                        {
+                            name: 'client_id',
+                            type: 'select',
+                            placeholder: 'Cliente',
+                            options: clientes,
+                        },
+                        {
+                            name: 'status',
+                            type: 'select',
+                            placeholder: 'Status',
+                            options: statusOptions,
+                        },
+                        {
+                            name: 'ies_send_pix',
+                            type: 'select',
+                            placeholder: 'Envio PIX?',
+                            options: sendPixOptions,
+                        },
+                    ]"
+                    :definedValues="filters"
+                    @submit="fAplicarFiltro"
+                />
+            </div>
+
             <div class="mt-6">
                 <Table :columnsName="colunas" :data="data" :actions="actions" />
 
@@ -39,12 +66,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch} from "vue";
-import { useForm, usePage} from "@inertiajs/vue3";
+import { ref, reactive, watch } from "vue";
+import { useForm, router } from "@inertiajs/vue3";
 
 import Sidebar from "@/Components/Sidebar.vue";
 import Table from "@/Components/Table.vue";
 import DashboardPages from "@/Components/DashboardPages.vue";
+import FiltroTabela from "../Components/FiltroTabela.vue";
 import Toast from "@/Components/Toast.vue";
 
 import RegisterButton from "../Components/RegisterButton.vue";
@@ -64,11 +92,16 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    filters: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 const data = ref(props.data);
 const clientes = ref(props.clients);
 const dashboardValues = reactive(props.dashboardValues);
+const filters = ref(props.filters);
 
 const colunas = [
     { label: "CÓDIGO", key: "id" },
@@ -77,12 +110,24 @@ const colunas = [
     { label: "VENCIMENTO", key: "data_vencimento" },
     { label: "VALOR", key: "valor", type: "money" },
     { label: "DATA DE PAGAMENTO", key: "data_pagamento" },
+    { label: "ENVIO PIX?", key: "link_acesso_pix" },
     { label: "DESCRIÇÃO", key: "descricao" },
 ];
 
 const actions = [
-    { icon: "Pencil", color: "blue-800", label: "Editar registro", onClick: fEditar, color: "#FF2C2C" },
-    { icon: "Trash2", color: "red-800",  label: "Excluir registro", onClick: fAbrirConfirmacao },
+    {
+        icon: "Pencil",
+        color: "blue-800",
+        label: "Editar registro",
+        onClick: fEditar,
+        color: "#FF2C2C",
+    },
+    {
+        icon: "Trash2",
+        color: "red-800",
+        label: "Excluir registro",
+        onClick: fAbrirConfirmacao,
+    },
 ];
 
 const cards = [
@@ -123,7 +168,40 @@ const cards = [
     },
 ];
 
+const statusOptions = [
+    { value: 1, label: "Pendente Envio" },
+    { value: 2, label: "Pendente Pagamento" },
+    { value: 3, label: "Pago" },
+    { value: 4, label: "Vencido" },
+];
+
+const sendPixOptions = [
+    { value: 1, label: "Sim" },
+    { value: 0, label: "Não" },
+];
+
+const toastMessage = ref("");
+const toastType = ref("info");
+const showToast = ref(false);
+
+function fShowToast(message, type) {
+    toastMessage.value = message;
+    toastType.value = type;
+    showToast.value = true;
+
+    setTimeout(() => {
+        showToast.value = false;
+    }, 3000); // 3 segundos
+}
+
 const form = useForm({});
+
+watch(
+    () => props.data,
+    (newData) => {
+        data.value = newData;
+    }
+);
 
 let registerButtonRef = ref(null);
 let registroSelecionado = ref({});
@@ -145,31 +223,63 @@ function fAbrirConfirmacao(id) {
 }
 
 function fExcluir(id) {
+    // form.delete(`/cobrancas/${id}`, {
+    //     preserveScroll: true,
+    // });
+
     form.delete(`/cobrancas/${id}`, {
         preserveScroll: true,
+        onSuccess: () => {
+            fShowToast("Cobrança excluido com sucesso!.", "success");
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        },
+        onError: (errorsResponse) => {
+            const fieldKeys = Object.keys(errorsResponse);
+
+            if (fieldKeys.length > 0) {
+                const firstErrorKey = fieldKeys[0];
+                let errorMessage = "Ocorreu um erro no processamento.";
+
+                const errorArray = errorsResponse[firstErrorKey];
+
+                if (Array.isArray(errorArray) && errorArray.length > 0) {
+                    errorMessage = errorArray[0];
+                } else if (
+                    typeof errorsResponse[firstErrorKey] === "object" &&
+                    errorsResponse[firstErrorKey] !== null
+                ) {
+                    errorMessage = firstErrorKey;
+                } else if (typeof errorArray === "string") {
+                    errorMessage = errorArray;
+                }
+
+                // Garante que o que vai para o fShowToast é uma String
+                if (
+                    typeof errorMessage === "string" &&
+                    errorMessage.length > 0
+                ) {
+                    fShowToast(errorMessage, "error");
+                } else {
+                    // Último recurso
+                    fShowToast(
+                        "Ocorreu um erro inesperado no servidor.",
+                        "error"
+                    );
+                }
+            } else {
+                fShowToast("Ocorreu um erro inesperado no servidor.", "error");
+            }
+        },
     });
 }
 
-const toastMessage = ref("");
-const toastType = ref("info");
-const showToast = ref(false);
-
-const page = usePage();
-// Watch para mostrar erros vindos do backend
-watch(
-    () => page.props.errors,
-    (errors) => {
-        if (errors && Object.keys(errors).length > 0) {
-            toastMessage.value = Object.values(errors)[0];
-            toastType.value = "error";
-            showToast.value = true;
-
-            setTimeout(() => {
-                showToast.value = false;
-            }, 3000);
-        }
-    },
-    { deep: true }
-);
-
+function fAplicarFiltro(filtros) {
+    router.get("/cobrancas", filtros, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
+}
 </script>

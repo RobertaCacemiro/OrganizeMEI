@@ -2,7 +2,7 @@
     <form
         method="dialog"
         @submit.prevent="fSubmit"
-        class="p-4 rounded-xl bg-white max-w-lg w-full"
+        class="p-4 md:p-6 rounded-xl bg-white w-full max-w-4xl mx-auto max-h-[90vh] overflow-y-auto md:max-h-none md:overflow-visible"
     >
         <!-- Título e botão de fechar -->
         <div class="relative mb-6 text-center">
