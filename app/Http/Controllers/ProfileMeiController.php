@@ -45,6 +45,11 @@ class ProfileMeiController extends Controller
     public function store(Request $request)
     {
         try {
+
+            $request->merge([
+                'number' => $request->number !== null ? (string) $request->number : null,
+            ]);
+
             $validatedData = $request->validate([
                 'identification' => 'required|string|max:255',
                 'cnpj' => 'required|string|max:20|unique:mei_profile',
@@ -87,6 +92,11 @@ class ProfileMeiController extends Controller
     public function update(Request $request, $id)
     {
         try {
+
+            $request->merge([
+                'number' => $request->number !== null ? (string) $request->number : null,
+            ]);
+
             $meiProfile = MeiProfile::findOrFail($id);
 
             $validatedData = $request->validate([
