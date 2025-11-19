@@ -65,6 +65,16 @@ function formatValue(value, type) {
     }
     return value;
 }
+
+const getRelativeUrl = (absoluteUrl) => {
+    if (!absoluteUrl) return null;
+    try {
+        const url = new URL(absoluteUrl);
+        return url.pathname + url.search;
+    } catch (e) {
+        return absoluteUrl;
+    }
+};
 </script>
 
 <template>
@@ -176,7 +186,7 @@ function formatValue(value, type) {
             <!-- Botão Anterior -->
             <Link
                 v-if="index === 0 && link.url"
-                :href="link.url"
+                :href="getRelativeUrl(link.url)"
                 class="p-1 text-gray-600 hover:text-[#3DA700]"
             >
                 <svg
@@ -216,7 +226,7 @@ function formatValue(value, type) {
                 v-else-if="
                     link.url && index !== 0 && index !== data.links.length - 1
                 "
-                :href="link.url"
+                :href="getRelativeUrl(link.url)"
                 class="btn btn-sm"
                 :class="
                     link.active
@@ -234,7 +244,7 @@ function formatValue(value, type) {
             <!-- Botão Próximo -->
             <Link
                 v-if="index === data.links.length - 1 && link.url"
-                :href="link.url"
+                :href="getRelativeUrl(link.url)"
                 class="p-1 text-gray-600 hover:text-[#3DA700]"
             >
                 <svg
