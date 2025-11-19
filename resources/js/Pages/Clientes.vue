@@ -57,7 +57,7 @@
 <script setup>
 import { ref, watch, reactive } from "vue";
 import { useForm, router } from "@inertiajs/vue3";
-import axios from "axios";
+import route from "ziggy-js";
 
 import Sidebar from "@/Components/Sidebar.vue";
 import Table from "@/Components/Table.vue";
@@ -184,7 +184,7 @@ function fAplicarFiltro(filtros) {
         Object.entries(filtros).filter(([_, v]) => v)
     );
 
-    router.get("/clientes", clean, {
+    router.get(route("clientes.index"), clean, {
         preserveState: true,
         preserveScroll: true,
         replace: true,
