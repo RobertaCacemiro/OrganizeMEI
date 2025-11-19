@@ -57,7 +57,7 @@
 <script setup>
 import { ref, watch, reactive } from "vue";
 import { useForm, router } from "@inertiajs/vue3";
-import route from "ziggy-js";
+import { route } from "ziggy-js";
 
 import Sidebar from "@/Components/Sidebar.vue";
 import Table from "@/Components/Table.vue";
