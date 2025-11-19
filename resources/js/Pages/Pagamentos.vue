@@ -8,6 +8,38 @@
 
                 <PixKeys :id="modalId" v-model:open="modalOpen" />
             </div>
+
+            <div>
+                <FiltroTabela
+                    :campos="[
+                        {
+                            name: 'codigo',
+                            type: 'number',
+                            placeholder: 'Código',
+                        },
+                        {
+                            name: 'charge_id',
+                            type: 'number',
+                            placeholder: 'Nº Cobrança',
+                        },
+                        {
+                            name: 'client_id',
+                            type: 'select',
+                            placeholder: 'Cliente',
+                            options: clientes,
+                        },
+                        {
+                            name: 'status',
+                            type: 'select',
+                            placeholder: 'Status',
+                            options: statusOptions,
+                        },
+                    ]"
+                    :definedValues="filters"
+                    @submit="fAplicarFiltro"
+                />
+            </div>
+
             <div class="mt-6">
                 <Table :columnsName="colunas" :data="data" :actions="actions" />
 
@@ -63,11 +95,12 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useForm, usePage } from "@inertiajs/vue3";
+import { ref, watch } from "vue";
+import { useForm, usePage, router } from "@inertiajs/vue3";
 
 import Sidebar from "@/Components/Sidebar.vue";
 import Table from "@/Components/Table.vue";
+import FiltroTabela from "../Components/FiltroTabela.vue";
 
 import ManipulationButton from "../Components/ManipulationButton.vue";
 import PixKeys from "./PixKeys.vue";
@@ -80,7 +113,11 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
-    clientes: {
+    clients: {
+        type: Object,
+        default: () => ({}),
+    },
+    filters: {
         type: Object,
         default: () => ({}),
     },
@@ -91,6 +128,8 @@ const user = page.props.auth?.user ?? {};
 const isPremium = [1, 2].includes(user.access);
 
 const data = ref(props.data);
+const clientes = ref(props.clients);
+const filters = ref(props.filters);
 
 const colunas = [
     { label: "CÓDIGO", key: "id" },
@@ -105,10 +144,27 @@ const colunas = [
 
 const actions = [
     { icon: "MailOpen", color: "blue-800", onClick: fVisualizarEmailPIX },
-    { icon: "Trash2", color: "red-800", onClick: fAbrirConfirmacao },
+    // { icon: "Trash2", color: "red-800", onClick: fAbrirConfirmacao },
+];
+
+const statusOptions = [
+    { value: 0, label: "Erro de Envio" },
+    { value: 1, label: "Pendente Envio" },
+    { value: 2, label: "Pendente Pagamento" },
+    { value: 3, label: "Pago (Informado pelo Cliente)" },
+    { value: 4, label: "Vencido" },
+    { value: 5, label: "Envio Cancelado" },
+    { value: 6, label: "Pago (Informado pelo Usuário)" },
 ];
 
 const form = useForm({});
+
+watch(
+    () => props.data,
+    (newData) => {
+        data.value = newData;
+    }
+);
 
 function fEditar(id) {
     console.log("Editar");
@@ -147,5 +203,13 @@ function fRedirecionaAssinatura() {
 
 function fRedirecionaTela() {
     window.history.back();
+}
+
+function fAplicarFiltro(filtros) {
+    router.get("/pagamentos", filtros, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
 }
 </script>
