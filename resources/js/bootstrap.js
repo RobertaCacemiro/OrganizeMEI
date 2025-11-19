@@ -1,4 +1,9 @@
-import axios from 'axios';
+import axios from "axios";
+
 window.axios = axios;
 
-window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+// Define a baseURL pro Axios pegar HTTPS
+window.axios.defaults.baseURL =
+    import.meta.env.VITE_APP_URL || window.location.origin;
+
+window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
