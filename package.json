@@ -24,6 +24,7 @@
         "v-money3": "^3.24.1",
         "vue": "^3.5.13",
         "vue-imask": "^7.6.1",
-        "vuejs-money": "^1.0.6"
+        "vuejs-money": "^1.0.6",
+        "ziggy-js": "^2.6.0"
     }
 }
