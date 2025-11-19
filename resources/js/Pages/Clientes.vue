@@ -180,7 +180,11 @@ function fExcluir(id) {
 }
 
 function fAplicarFiltro(filtros) {
-    router.get("/clientes", filtros, {
+    const clean = Object.fromEntries(
+        Object.entries(filtros).filter(([_, v]) => v)
+    );
+
+    router.get("/clientes", clean, {
         preserveState: true,
         preserveScroll: true,
         replace: true,
