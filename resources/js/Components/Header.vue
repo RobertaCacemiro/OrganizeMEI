@@ -24,8 +24,8 @@ const props = defineProps({
                     <img
                         alt="Foto de perfil do MEI"
                         :src="
-                            page.props.auth.user.profile_photo
-                                ? `/storage/${page.props.auth.user.profile_photo}`
+                            page.props.data?.profile_photo
+                                ? page.props.data.profile_photo
                                 : 'https://placehold.co/200x200'
                         "
                     />

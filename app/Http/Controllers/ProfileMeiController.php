@@ -65,13 +65,23 @@ class ProfileMeiController extends Controller
                 'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             ]);
 
-            if ($request->hasFile('profile_photo')) {
+            if ($request->hasFile('profile_photo') && $request->file('profile_photo')->isValid()) {
+                $request->validate([
+                    'profile_photo' => 'image|mimes:jpeg,png,jpg|max:2048',
+                ]);
+
                 $cnpj = preg_replace('/\D/', '', $validatedData['cnpj']);
 
-                $path = $request->file('profile_photo')->store("profile_images/{$cnpj}", 'public');
+                // Salva no S3
+                $path = $request->file('profile_photo')->store("profile_images/{$cnpj}", 's3');
 
-                $validatedData['profile_photo'] = $path;
+                // Torna público
+                \Storage::disk('s3')->setVisibility($path, 'public');
+
+                // Salva URL no banco
+                $validatedData['profile_photo'] = \Storage::disk('s3')->url($path);
             }
+
 
             $meiProfile = MeiProfile::create($validatedData);
 
@@ -122,14 +132,20 @@ class ProfileMeiController extends Controller
 
                 $cnpj = preg_replace('/\D/', '', $meiProfile->cnpj);
 
-                // Apaga imagem antiga se existir
-                if ($meiProfile->profile_photo && \Storage::disk('public')->exists($meiProfile->profile_photo)) {
-                    \Storage::disk('public')->delete($meiProfile->profile_photo);
+                // Apaga imagem antiga do S3, se existir
+                if ($meiProfile->profile_photo) {
+                    $oldPath = str_replace(\Storage::disk('s3')->url(''), '', $meiProfile->profile_photo);
+                    if (\Storage::disk('s3')->exists($oldPath)) {
+                        \Storage::disk('s3')->delete($oldPath);
+                    }
                 }
 
                 // Salva nova imagem
-                $path = $request->file('profile_photo')->store("profile_images/{$cnpj}", 'public');
-                $validatedData['profile_photo'] = $path;
+                $path = $request->file('profile_photo')->store("profile_images/{$cnpj}", 's3');
+                \Storage::disk('s3')->setVisibility($path, 'public');
+
+                // Atualiza URL no banco
+                $validatedData['profile_photo'] = \Storage::disk('s3')->url($path);
             }
 
             $meiProfile->update($validatedData);
