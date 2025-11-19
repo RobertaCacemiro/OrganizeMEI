@@ -62,7 +62,7 @@ class ClientController extends Controller
 
         return Inertia::render('Clientes', [
             'data' => $clients,
-            'filters' => $request->all()
+            'filters' => $request->only(['name', 'cpf_cnpj', 'email'])
         ]);
     }
 

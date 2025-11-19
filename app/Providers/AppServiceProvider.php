@@ -8,6 +8,8 @@ use App\Mail\SendGridTransport;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 
+use Inertia\Inertia;
+
 class AppServiceProvider extends ServiceProvider
 {
     public function register()
@@ -23,5 +25,9 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.env') === 'production') {
             URL::forceScheme('https');
         }
+
+        Inertia::share([
+            'app_url' => config('app.url'),
+        ]);
     }
 }
