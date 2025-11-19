@@ -3,19 +3,17 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Middleware\TrustProxies as Middleware;
-use Symfony\Component\HttpFoundation\Request;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class TrustProxies extends Middleware
 {
-    /**
-     * Confia em todos os proxies — necessário para Railway, Render,
-     * Heroku, Vercel, Nginx, Cloudflare etc.
-     */
     protected $proxies = '*';
 
-    /**
-     * Diz ao Laravel para ler corretamente os headers X-Forwarded
-     * e detectar HTTPS real.
-     */
-    protected $headers = Request::HEADER_X_FORWARDED_ALL;
+    protected $headers =
+        Request::HEADER_X_FORWARDED_FOR |
+        Request::HEADER_X_FORWARDED_HOST |
+        Request::HEADER_X_FORWARDED_PORT |
+        Request::HEADER_X_FORWARDED_PROTO |
+        Request::HEADER_X_FORWARDED_AWS_ELB;
 }

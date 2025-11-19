@@ -22,12 +22,12 @@ const props = defineProps({
             >
                 <div class="w-10 rounded-full">
                     <img
+                        alt="Foto de perfil do MEI"
                         :src="
                             page.props.auth.user.profile_photo
-                                ? `${page.props.app_url}/storage/${page.props.auth.user.profile_photo}`
+                                ? `/storage/${page.props.auth.user.profile_photo}`
                                 : 'https://placehold.co/200x200'
                         "
-                        alt="Foto de perfil do MEI"
                     />
                 </div>
                 <span
