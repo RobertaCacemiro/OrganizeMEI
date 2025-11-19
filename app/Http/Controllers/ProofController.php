@@ -54,11 +54,19 @@ class ProofController extends Controller
         // Busca o pagamento
         $payment = Payment::where('key', $key)->firstOrFail();
 
-        // Salva o arquivo no storage/payments/{key}/
+        // Salva o arquivo no S3 em payments/{key}/
         $directory = "payments/{$payment->key}";
         $file = $request->file('comprovante');
         $filename = time() . '_' . $file->getClientOriginalName();
-        $path = $file->storeAs($directory, $filename, 'public');
+
+        // Armazena no S3
+        $path = $file->storeAs($directory, $filename, 's3');
+
+        // Torna o arquivo público
+        \Storage::disk('s3')->setVisibility($path, 'public');
+
+        // Salva o path no payment
+        $payment->comprovante_path = $path;
 
         $payment->status = 3;
         $payment->return_at = now();
