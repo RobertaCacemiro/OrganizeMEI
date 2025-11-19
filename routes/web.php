@@ -69,6 +69,9 @@ Route::middleware(['auth'])->group(function () {
             return Inertia::render('Pagamentos');
         });
 
+        Route::get('/upgrade', function () {
+            return Inertia::render('Upgrade');
+        })->name('upgrade');
 
         /**
          * @description Rota para view de cadastro de usuário
@@ -112,7 +115,6 @@ Route::middleware(['auth'])->group(function () {
             ->name('pix.keys.fetch');
         Route::delete('/pix-keys/{id}', [MeiPixKeyController::class, 'destroy']);
         Route::put('/pix-keys/{id}/activate', [MeiPixKeyController::class, 'update']);
-
         Route::post('/pix-keys/store', [MeiPixKeyController::class, 'store']);
 
 

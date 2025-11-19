@@ -180,7 +180,7 @@ const cards = [
         descriptionWeight: "font-bold",
     },
     {
-        title: "Saldo Atual:",
+        title: "Saldo Atual (Mensal):",
         titleSize: "text-base",
         description: dashboardValues.saldo,
         descriptionSize: "text-2xl",
