@@ -483,7 +483,7 @@ function fValidaRequestForm() {
             const valor = form[campo];
             if (!valor || valor.toString().trim() === "") {
                 erros.push(
-                    `O campo *${nomeCampo} é obrigatório para completar o endereço.`
+                    `Informe o endereço completo, para completar informe o campo ${nomeCampo}.`
                 );
             }
         }

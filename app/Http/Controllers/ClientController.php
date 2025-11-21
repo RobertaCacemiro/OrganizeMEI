@@ -70,13 +70,17 @@ class ClientController extends Controller
     {
         try {
 
+            $request->merge([
+                'number' => $request->number !== null ? (string) $request->number : null,
+            ]);
+
             $validatedData = $request->validate([
                 'cpf_cnpj' => 'required|unique:clients,cpf_cnpj',
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|max:255|unique:clients,email',
                 'phone' => 'nullable|string|max:255',
                 'street' => 'nullable|string|max:255',
-                'number' => 'nullable|int|max:255',
+                'number' => 'nullable|string|max:255',
                 'complement' => 'nullable|string|max:255',
                 'district' => 'nullable|string|max:255',
                 'city' => 'nullable|string|max:255',
@@ -129,6 +133,10 @@ class ClientController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            $request->merge([
+                'number' => $request->number !== null ? (string) $request->number : null,
+            ]);
+
             $userId = auth()->id();
             $meiId = session('mei_id');
 

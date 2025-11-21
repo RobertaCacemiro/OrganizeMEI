@@ -93,30 +93,27 @@ class ChargeController extends Controller
         $userId = auth()->id();
         $meiId = session('mei_id');
 
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
+
         $query = Charge::where('user_id', $userId)
-            ->where('mei_id', $meiId);
+            ->where('mei_id', $meiId)
+            ->whereMonth('due_date', $currentMonth)
+            ->whereYear('due_date', $currentYear);
 
-        // Total em dinheiro
-        $totalPendentes = (clone $query)->where('status', 1)->sum('amount');
-        $totalPagos = (clone $query)->where('status', 2)->sum('amount');
-        $totalAtrasados = (clone $query)->where('status', 3)->sum('amount');
-
-        // Quantidade de registros
-        $countPendentes = (clone $query)->where('status', 1)->count();
-        $countPagos = (clone $query)->where('status', 2)->count();
-        $countAtrasados = (clone $query)->where('status', 3)->count();
-
-        // Calcular total em dinheiro
-        $totalCobrancas = ($countPendentes + $countPagos + $countAtrasados);
-
+        // Contagens por status
+        $countPendentes = (clone $query)->where('status', 2)->count();
+        $countPagos = (clone $query)->where('status', 3)->count();
+        $countAtrasados = (clone $query)->where('status', 4)->count();
 
         return [
-            'total_cobrancas' => $totalCobrancas,
+            'total_cobrancas' => $countPendentes + $countPagos + $countAtrasados,
             'total_pagos' => $countPagos,
             'total_pendentes' => $countPendentes,
             'total_atrasados' => $countAtrasados,
         ];
     }
+
 
     public function store(Request $request)
     {
