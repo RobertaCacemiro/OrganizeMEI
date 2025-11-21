@@ -51,15 +51,6 @@
                 v-else-if="dados.data.length && !loading"
                 class="overflow-x-auto"
             >
-                <div class="flex justify-end items-center pb-3">
-                    <RegisterButton
-                        ref="registerButtonRef"
-                        :nomenclature="'NOVO LANÇAMENTO'"
-                        :form="FormKeyPix"
-                        :data="registroSelecionado"
-                        @refresh="fCarregaTable"
-                    />
-                </div>
                 <!-- Assume-se que 'Table' é o DataTable importado. -->
                 <Table
                     :columnsName="colunas"

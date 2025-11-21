@@ -132,7 +132,7 @@ const actions = [
 
 const cards = [
     {
-        title: "Total de Cobranças:",
+        title: "Total de Cobranças (Mensal):",
         titleSize: "text-base",
         description: dashboardValues.total_cobrancas,
         descriptionSize: "text-3xl",
