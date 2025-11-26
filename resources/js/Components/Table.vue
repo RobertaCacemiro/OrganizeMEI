@@ -1,7 +1,7 @@
 <script setup>
 import * as LucideIcons from "lucide-vue-next";
-import { computed, ref, watch } from "vue";
-import { Link } from "@inertiajs/vue3";
+import { computed, ref } from "vue";
+import { Link, router } from "@inertiajs/vue3";
 
 const props = defineProps({
     columnsName: Array,
@@ -9,13 +9,14 @@ const props = defineProps({
     actions: {
         type: Array,
         default: () => [
+            // Se quiser, substitua Pencil/Trash2 por strings ou ícones válidos
             {
-                icon: Pencil,
+                icon: "Pencil",
                 color: "blue-800",
                 onClick: (id) => console.log("Editar", id),
             },
             {
-                icon: Trash2,
+                icon: "Trash2",
                 color: "red-800",
                 onClick: (id) => console.log("Excluir", id),
             },
@@ -23,26 +24,37 @@ const props = defineProps({
     },
 });
 
-// Armazena os itens selecionados
+// Loading global (Inertia)
+const loading = ref(true);
+router.on("start", () => (loading.value = true));
+router.on("finish", () => (loading.value = false));
+
+// Seleção (mantive o seu)
 const selectedItems = ref([]);
 
-// Computed para converter ícones
+// converte o nome do ícone para componente se existir
 const actionsWithIcons = computed(() => {
     if (!props.actions) return [];
     return props.actions.map((action) => ({
         ...action,
-        icon: action.icon ? LucideIcons[action.icon] : null,
+        // tentativa segura: se o action.icon for string, pega do LucideIcons
+        icon:
+            typeof action.icon === "string"
+                ? LucideIcons[action.icon]
+                : action.icon
+                ? LucideIcons[action.icon]
+                : null,
     }));
 });
 
-// Se todos estão selecionados
 const allSelected = computed({
     get: () =>
-        props.data.data?.length > 0 &&
+        props.data?.data?.length > 0 &&
         selectedItems.value.length === props.data.data.length,
     set: (val) => {
         if (val) {
-            selectedItems.value = props.data.data.map((item) => item.id);
+            selectedItems.value =
+                props.data?.data?.map((item) => item.id) || [];
         } else {
             selectedItems.value = [];
         }
@@ -59,11 +71,11 @@ function toggleSelection(id) {
 
 function formatValue(value, type) {
     if (type === "money") {
-        return `R$ ${Number(value).toLocaleString("pt-BR", {
+        return `R$ ${Number(value || 0).toLocaleString("pt-BR", {
             minimumFractionDigits: 2,
         })}`;
     }
-    return value;
+    return value ?? "";
 }
 
 const getRelativeUrl = (absoluteUrl) => {
@@ -80,6 +92,13 @@ const getRelativeUrl = (absoluteUrl) => {
 <template>
     <div class="w-full">
         <div
+            v-if="!data || !data.data || data.data.length === 0"
+            class="text-center py-10 border border-[#3DA700] border-dashed text-[#3DA700]"
+        >
+            Nenhum registro encontrado.
+        </div>
+        <div
+            v-else
             class="hidden md:block overflow-x-auto rounded-box border border-base-content/5 bg-base-100"
         >
             <table class="table table-zebra w-full">
@@ -135,7 +154,7 @@ const getRelativeUrl = (absoluteUrl) => {
             </table>
         </div>
 
-        <!-- Cards para telas pequenas -->
+        <!-- CARDS (MOBILE) -->
         <div class="grid gap-4 md:hidden">
             <div
                 v-for="(item, rowIndex) in data.data"
@@ -156,8 +175,7 @@ const getRelativeUrl = (absoluteUrl) => {
                     </span>
                 </div>
 
-                <!-- Ações -->
-                <div class="flex gap-3 mt-10 justify-end">
+                <div class="flex gap-3 mt-4 justify-end">
                     <button
                         v-for="(action, aIndex) in actionsWithIcons"
                         :key="aIndex"
@@ -177,7 +195,7 @@ const getRelativeUrl = (absoluteUrl) => {
         </div>
     </div>
 
-    <!-- Paginação -->
+    <!-- PAGINAÇÃO -->
     <div
         v-if="data.links && data.links.length > 3"
         class="flex justify-center mt-4 gap-2 items-center"
@@ -204,6 +222,7 @@ const getRelativeUrl = (absoluteUrl) => {
                     />
                 </svg>
             </Link>
+
             <span v-else-if="index === 0" class="p-1 text-gray-400">
                 <svg
                     xmlns="https://www.w3.org/2000/svg"
@@ -221,7 +240,7 @@ const getRelativeUrl = (absoluteUrl) => {
                 </svg>
             </span>
 
-            <!-- Páginas numéricas -->
+            <!-- Páginas -->
             <Link
                 v-else-if="
                     link.url && index !== 0 && index !== data.links.length - 1
