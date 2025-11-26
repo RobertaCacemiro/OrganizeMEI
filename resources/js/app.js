@@ -12,7 +12,7 @@ createInertiaApp({
         const app = createApp({ render: () => h(App, props) });
 
         app.use(plugin);
-        app.use(money); // <<--- AQUI REGISTRA O v-money3
+        app.use(money);
 
         app.mount(el);
     },

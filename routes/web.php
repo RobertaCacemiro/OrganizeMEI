@@ -14,7 +14,9 @@ use App\Http\Controllers\{
     CategoriesController,
     PaymentController,
     ProofController,
-    MeiPixKeyController
+    MeiPixKeyController,
+    DashboardController,
+    ChartController
 };
 
 Route::get('/pix-keys', [MeiPixKeyController::class, 'index'])
@@ -46,11 +48,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile-mei/store', [ProfileMeiController::class, 'store']);
     Route::post('/profile-mei/{id}/update', [ProfileMeiController::class, 'update']);
 
-
     Route::middleware(['require.mei'])->group(function () {
 
         Route::get('/', function () {
-            return Inertia::render('Home');
+            return Inertia::render(component: 'Home');
         })->middleware(['auth', 'verified']);
 
         Route::get('/clientes', function () {
@@ -117,6 +118,16 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/pix-keys/{id}/activate', [MeiPixKeyController::class, 'update']);
         Route::post('/pix-keys/store', [MeiPixKeyController::class, 'store']);
 
+        Route::get('/', [DashboardController::class, 'index'])->name('home');
+
+        Route::get('/upgrade', function () {
+            return Inertia::render('Upgrade');
+        })->name('upgrade');
+
+        Route::middleware(['auth'])->get('/charts/monthly-balance', [ChartController::class, 'monthlyBalance'])->name('charts.monthly_balance');
+        Route::middleware(['auth'])->get('/charts/billing-status', [ChartController::class, 'billingStatus'])->name('charts.billing_status');
+        Route::middleware(['auth'])->get('/charts/income-categories', [ChartController::class, 'incomeCategories'])->name('charts.income_categories');
+        Route::middleware(['auth'])->get('/charts/expense-categories', [ChartController::class, 'expenseCategories'])->name('charts.expense_categories');
 
     });
 

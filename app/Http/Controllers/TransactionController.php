@@ -91,12 +91,23 @@ class TransactionController extends Controller
         $userId = auth()->id();
         $meiId = session('mei_id');
 
-        $query = Transaction::where('user_id', $userId)
-            ->where('mei_id', $meiId);
+        $mesAtual = now()->month;
+        $anoAtual = now()->year;
 
-        // Somar receitas e despesas
-        $totalReceitas = (clone $query)->where('type', 2)->sum('amount');
-        $totalDespesas = (clone $query)->where('type', 1)->sum('amount');
+        $query = Transaction::where('user_id', $userId)
+            ->where('mei_id', $meiId)
+            ->whereMonth('transaction_date', $mesAtual)
+            ->whereYear('transaction_date', $anoAtual);
+
+        // Somar receitas
+        $totalReceitas = (clone $query)
+            ->where('type', 2)
+            ->sum('amount');
+
+        // Somar despesas
+        $totalDespesas = (clone $query)
+            ->where('type', 1)
+            ->sum('amount');
 
         // Calcular saldo
         $saldo = $totalReceitas - $totalDespesas;
@@ -192,6 +203,13 @@ class TransactionController extends Controller
         } catch (Exception $e) {
             return redirect()->back()->with('error', 'Ocorreu um erro ao excluir o registro financeirto: ' . $e->getMessage());
         }
+    }
+
+
+    public function graphic()
+    {
+
+        echo "TESTE";
     }
 
 }
