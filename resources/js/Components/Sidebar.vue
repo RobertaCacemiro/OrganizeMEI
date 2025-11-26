@@ -95,6 +95,7 @@ function flogout() {
                                 ? 'bg-[#2d8800] text-black'
                                 : 'hover:bg-[#2d8800]',
                         ]"
+                        :title="value.label"
                     >
                         <component :is="value.icon" />
                         <span v-if="isExpanded">{{ value.label }}</span>

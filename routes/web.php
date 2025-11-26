@@ -70,6 +70,9 @@ Route::middleware(['auth'])->group(function () {
             return Inertia::render('Pagamentos');
         });
 
+        Route::get('/upgrade', function () {
+            return Inertia::render('Upgrade');
+        })->name('upgrade');
 
         /**
          * @description Rota para view de cadastro de usuário

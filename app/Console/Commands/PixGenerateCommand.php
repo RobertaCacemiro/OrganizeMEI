@@ -24,9 +24,11 @@ class PixGenerateCommand extends Command
         };
 
         $sanitize = function ($text) {
-            $cleanText = iconv('UTF-8', 'ASCII//TRANSLIT', $text);
-            $cleanText = preg_replace('/[^A-Za-z0-9 ]/', '', $cleanText);
-            return strtoupper($cleanText);
+            $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
+            $text = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $text);
+            $text = preg_replace('/[^A-Za-z0-9 ]/', '', $text);
+
+            return strtoupper($text);
         };
 
         $gui = $format('00', 'BR.GOV.BCB.PIX');

@@ -11,7 +11,7 @@ use App\Models\Client;
 
 class PaymentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $userId = auth()->id();
         $meiId = session('mei_id');
@@ -20,11 +20,11 @@ class PaymentController extends Controller
         $clients = Client::where('user_id', $userId)
             ->where('mei_id', $meiId)
             ->orderBy('name')
-            ->get(['id', 'name'])
+            ->get(['id', 'cpf_cnpj', 'name'])
             ->map(function ($client) {
                 return [
-                    'id' => $client->id,
-                    'name' => $client->name,
+                    'value' => $client->id,
+                    'label' => $client->cpf_cnpj . "- " . $client->name,
                 ];
             });
 
@@ -33,14 +33,32 @@ class PaymentController extends Controller
             1 => 'Pendente Envio',
             2 => 'Pendente Pagamento',
             3 => 'Pago (Cliente)',
-            4 => 'Atrasado',
+            4 => 'Vencido',
             5 => 'Envio Cancelado',
             6 => 'Pago (Usuário)',
         ];
 
-        $payments = Payment::with(['client', 'charge'])
+        $query = Payment::with(['client', 'charge'])
             ->where('user_id', $userId)
-            ->where('mei_id', $meiId)
+            ->where('mei_id', $meiId);
+
+        if ($request->filled('codigo')) {
+            $query->where('id', $request->codigo);
+        }
+
+        if ($request->filled('client_id')) {
+            $query->where('client_id', $request->client_id);
+        }
+
+        if ($request->filled('charge_id')) {
+            $query->where('charge_id', $request->charge_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $payments = $query
             ->orderBy('created_at', 'desc')
             ->paginate(10)
             ->withQueryString()
@@ -60,7 +78,9 @@ class PaymentController extends Controller
             });
 
         return Inertia::render('Pagamentos', [
-            'data' => $payments
+            'data' => $payments,
+            'clients' => $clients,
+            'filters' => $request->all()
         ]);
     }
 

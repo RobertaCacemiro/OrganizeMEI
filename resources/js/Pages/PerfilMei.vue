@@ -19,7 +19,7 @@
                                             />
                                             <img
                                                 v-else-if="data?.profile_photo"
-                                                :src="`/storage/${data.profile_photo}`"
+                                                :src="data.profile_photo"
                                                 class="w-full h-full object-cover"
                                             />
                                             <img
