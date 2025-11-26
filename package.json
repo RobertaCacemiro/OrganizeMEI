@@ -18,12 +18,14 @@
         "@heroicons/vue": "^2.2.0",
         "@inertiajs/vue3": "^2.0.8",
         "@vitejs/plugin-vue": "^5.2.3",
+        "chart.js": "^4.5.1",
         "lucide-vue-next": "^0.511.0",
         "maska": "^3.1.1",
         "qrcode.vue": "^3.6.0",
         "v-money3": "^3.24.1",
         "vue": "^3.5.13",
         "vue-imask": "^7.6.1",
-        "vuejs-money": "^1.0.6"
+        "vuejs-money": "^1.0.6",
+        "vue-chartjs": "^5.3.2"
     }
 }

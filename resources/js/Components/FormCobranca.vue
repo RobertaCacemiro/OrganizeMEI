@@ -367,8 +367,6 @@ function submit() {
             method: "put",
             forceFormData: true,
             onSuccess: () => {
-                console.log("Sucesso");
-
                 fShowToast("Cobrança atualizada com sucesso!.", "info");
 
                 setTimeout(() => {
@@ -421,8 +419,6 @@ function submit() {
         // Cadastrar
         form.post("/cobrancas/store", {
             onSuccess: () => {
-                console.log("Sucesso");
-
                 fShowToast("Cobrança cadastrada com sucesso!.", "info");
 
                 setTimeout(() => {
