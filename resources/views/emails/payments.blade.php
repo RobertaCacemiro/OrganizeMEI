@@ -13,7 +13,7 @@
 
         <!-- Logo -->
        <div style="text-align:center; margin-bottom:20px;">
-            <img src="{{ asset('public/storage/img/logo.png') }}" alt="Logo OrganizeMEI"
+            <img src="https://organize-mei-storage.s3.us-east-2.amazonaws.com/logos/logo.png" alt="Logo OrganizeMEI"
                 style="max-width:180px; height:auto;">
         </div>
 
