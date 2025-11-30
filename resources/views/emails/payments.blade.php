@@ -12,8 +12,8 @@
         style="max-width:600px; margin:20px auto; background:#ffffff; border-radius:10px; padding:24px; box-shadow:0 3px 8px rgba(0,0,0,0.12);">
 
         <!-- Logo -->
-        <div style="text-align:center; margin-bottom:20px;">
-            <img src="{{ asset('resources/img/logo.png') }}" alt="Logo OrganizeMEI"
+       <div style="text-align:center; margin-bottom:20px;">
+            <img src="{{ asset('public/storage/img/logo.png') }}" alt="Logo OrganizeMEI"
                 style="max-width:180px; height:auto;">
         </div>
 
