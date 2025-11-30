@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Validation\Rule;
+
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Exception;
@@ -74,10 +76,24 @@ class ClientController extends Controller
                 'number' => $request->number !== null ? (string) $request->number : null,
             ]);
 
+            // Recupera o mei_id da sessão
+            $meiId = session('mei_id');
+
+            if (!$meiId) {
+                return redirect()->back()->withErrors(['mei_id' => 'Perfil do MEI não encontrada.']);
+            }
+
             $validatedData = $request->validate([
-                'cpf_cnpj' => 'required|unique:clients,cpf_cnpj',
+                'cpf_cnpj' => [
+                    'required',
+                    Rule::unique('clients')->where(fn($q) => $q->where('mei_id', $meiId)),
+                ],
                 'name' => 'required|string|max:255',
-                'email' => 'required|email|max:255|unique:clients,email',
+                'email' => [
+                    'nullable',
+                    'email',
+                    Rule::unique('clients')->where(fn($q) => $q->where('mei_id', $meiId)),
+                ],
                 'phone' => 'nullable|string|max:255',
                 'street' => 'nullable|string|max:255',
                 'number' => 'nullable|string|max:255',
@@ -87,21 +103,7 @@ class ClientController extends Controller
                 'state' => 'nullable|string|max:2',
                 'zip_code' => 'nullable|string|max:10',
                 'notes' => 'nullable|string',
-            ], [
-                'cpf_cnpj.required' => 'O CPF/CNPJ é obrigatório.',
-                'cpf_cnpj.unique' => 'Esse CPF/CNPJ já está cadastrado.',
-                'name.required' => 'A identificação da pessoa física/juridica é obrigatório.',
-                'email.email' => 'Digite um e-mail válido.',
-                'email.required' => 'O e-mail é obrigatório.',
-                'email.unique' => 'Este e-mail está vinculado a outro usuário.',
             ]);
-
-            // Recupera o mei_id da sessão
-            $meiId = session('mei_id');
-
-            if (!$meiId) {
-                return redirect()->back()->withErrors(['mei_id' => 'Perfil do MEI não encontrada.']);
-            }
 
             // Cria o cliente usando os dados validados
             $client = Client::create([
