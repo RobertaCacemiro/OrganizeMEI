@@ -103,7 +103,16 @@ class ClientController extends Controller
                 'state' => 'nullable|string|max:2',
                 'zip_code' => 'nullable|string|max:10',
                 'notes' => 'nullable|string',
+            ], [
+                'cpf_cnpj.required' => 'O CPF/CNPJ é obrigatório.',
+                'cpf_cnpj.unique' => 'Este CPF/CNPJ já está cadastrado.',
+
+                'email.email' => 'Digite um e-mail válido.',
+                'email.unique' => 'Este e-mail já está cadastrado.',
+
+                'name.required' => 'A identificação da pessoa física/jurídica é obrigatória.',
             ]);
+
 
             // Cria o cliente usando os dados validados
             $client = Client::create([
