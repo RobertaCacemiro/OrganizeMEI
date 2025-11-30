@@ -140,6 +140,8 @@ class PixGenerateCommand extends Command
                     $payment->error_message = null;
                     $payment->save();
 
+                    $charge->status = 2;
+                    $charge->save();
                 } catch (\Exception $e) {
                     $payment->error_message = $e->getMessage();
                     $payment->status = 0; // Erro

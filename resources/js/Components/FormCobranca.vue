@@ -76,7 +76,6 @@
                 <fieldset class="fieldset">
                     <legend class="fieldset-legend text-base">
                         Data de Pagamento
-                        <span class="text-red-500 -ml-2">*</span>
                     </legend>
                     <input
                         v-model="form.payment_date"

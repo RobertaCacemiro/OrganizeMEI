@@ -91,6 +91,8 @@
                 </div>
             </div>
         </div>
+
+        <PixEmailModal v-model:open="emailModalOpen" :keyPix="emailModalKey" />
     </Sidebar>
 </template>
 
@@ -107,6 +109,7 @@ import PixKeys from "./PixKeys.vue";
 
 import RegisterButton from "../Components/RegisterButton.vue";
 import ConfirmAction from "../Components/ConfirmAction.vue";
+import PixEmailModal from "../Components/PixEmailModal.vue";
 
 const props = defineProps({
     data: {
@@ -143,7 +146,12 @@ const colunas = [
 ];
 
 const actions = [
-    { icon: "MailOpen", color: "blue-800", onClick: fVisualizarEmailPIX },
+    {
+        icon: "FileText",
+        color: "blue-800",
+        label: "Visualizar comprovante",
+        onClick: fVisualizarComprovante,
+    },
     // { icon: "Trash2", color: "red-800", onClick: fAbrirConfirmacao },
 ];
 
@@ -193,8 +201,12 @@ function fAbrirModal(id) {
     modalOpen.value = true;
 }
 
-function fVisualizarEmailPIX() {
-    console.log("Teste");
+const emailModalOpen = ref(false);
+const emailModalKey = ref(null);
+
+function fVisualizarComprovante(row) {
+    emailModalKey.value = row; // ou row.pix_key
+    emailModalOpen.value = true;
 }
 
 function fRedirecionaAssinatura() {

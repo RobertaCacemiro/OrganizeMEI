@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
+
 use Illuminate\Http\Request;
 use App\Models\Payment;
 use App\Models\Charge;
@@ -54,7 +56,6 @@ class ProofController extends Controller
         // Busca o pagamento
         $payment = Payment::where('key', $key)->firstOrFail();
 
-        // Salva o arquivo no S3 em payments/{key}/
         $directory = "payments/{$payment->key}";
         $file = $request->file('comprovante');
         $filename = time() . '_' . $file->getClientOriginalName();
@@ -64,9 +65,6 @@ class ProofController extends Controller
 
         // Torna o arquivo público
         \Storage::disk('s3')->setVisibility($path, 'public');
-
-        // Salva o path no payment
-        $payment->comprovante_path = $path;
 
         $payment->status = 3;
         $payment->return_at = now();
@@ -89,5 +87,50 @@ class ProofController extends Controller
             ],
         ]);
     }
+
+    public function file($key)
+    {
+        $payment = Payment::where('id', $key)->firstOrFail();
+
+        // Busca arquivos no diretório do S3
+        $files = Storage::disk('s3')->files("payments/{$payment->key}");
+
+        if (empty($files)) {
+            abort(404, 'Nenhum comprovante encontrado.');
+        }
+
+        $file = collect($files)->last(); // pega o mais recente
+
+        // Gera URL assinada por 10 min
+        $signedUrl = Storage::disk('s3')->temporaryUrl(
+            $file,
+            now()->addMinutes(10),
+            [
+                'ResponseContentDisposition' => 'inline', // mostra no navegador
+                'ResponseContentType' => 'image/jpeg'
+            ]
+        );
+
+        return response()->json([
+            'url' => $signedUrl
+        ]);
+    }
+
+    public function download($key)
+    {
+        $payment = Payment::where('id', $key)->firstOrFail();
+
+        $files = Storage::disk('s3')->files("payments/{$payment->key}");
+
+        if (empty($files)) {
+            abort(404, 'Nenhum comprovante encontrado.');
+        }
+
+        $file = collect($files)->last();
+
+        return Storage::disk('s3')->download($file);
+    }
+
+
 
 }

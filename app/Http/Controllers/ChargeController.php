@@ -60,7 +60,7 @@ class ChargeController extends Controller
             $query->where('ies_send_pix', $request->ies_send_pix);
         }
 
-        $charges = $query->orderBy('due_date', 'desc')
+        $charges = $query->orderBy('id', 'desc')
             ->paginate(10)
             ->through(function ($charge) use ($statusMap) {
                 return [

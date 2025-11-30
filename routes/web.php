@@ -39,6 +39,8 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout'); // J
 
 Route::get('/comprovante/{key}', [ProofController::class, 'show'])->name('comprovante.show');
 Route::post('/comprovante/{key}', [ProofController::class, 'upload'])->name('comprovante.upload');
+Route::get('/comprovante/{key}/arquivo', [ProofController::class, 'file']);
+Route::get('/comprovante/{key}/arquivo/download', [ProofController::class, 'download']);
 
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
@@ -109,8 +111,6 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/cobrancas/{id}', [ChargeController::class, 'destroy']);
 
         Route::get('/pagamentos', [PaymentController::class, 'index'])->name('pagamentos.index');
-
-        Route::get('/comprovante/{key}', [ProofController::class, 'show'])->name('comprovante.show');
 
         Route::get('/api/pix-keys', [MeiPixKeyController::class, 'index'])
             ->name('pix.keys.fetch');
